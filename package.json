@@ -1,0 +1,15 @@
+{
+  "name": "bet-analyze",
+  "version": "1.0.0",
+  "description": "Analyze bet history and calculate profit/loss, ROI, and performance metrics.",
+  "main": "scripts/analyze.js",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/analyze.js",
+    "build:web": "npm --prefix web run build",
+    "typecheck:web": "npm --prefix web run typecheck"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚡ Bet Analyzer — analyze your {{PROVIDER_NAME}} bets in one click</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--panel2:#0e1526;--border:#1f2a45;--text:#e7edf7;--muted:#8fa0c2;--green:#10b981;--amber:#f59e0b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;padding:40px 20px 60px}
+.wrap{max-width:720px;margin:0 auto}
+.hero{text-align:center;margin-bottom:36px}
+.hero h1{font-size:30px;font-weight:800;letter-spacing:.3px;margin-bottom:8px}
+.hero p{color:var(--muted);font-size:15px;max-width:520px;margin:0 auto}
+.drag-btn{display:inline-block;margin-top:22px;background:linear-gradient(135deg,#10b981,#059669);color:#04231a;font-weight:800;font-size:18px;padding:16px 30px;border-radius:14px;text-decoration:none;box-shadow:0 10px 30px rgba(16,185,129,.25);transition:transform .15s}
+.drag-btn:hover{transform:translateY(-2px)}
+.drag-btn small{display:block;font-weight:600;font-size:12px;opacity:.75;margin-top:4px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:34px 0}
+.step{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px}
+.step .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);color:var(--green);font-weight:800;font-size:14px;margin-bottom:10px}
+.step h3{font-size:14px;margin-bottom:6px}
+.step p{color:var(--muted);font-size:13px}
+.note{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin:18px 0}
+.note h2{font-size:14px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px}
+.note p{font-size:13.5px;color:var(--muted);margin-bottom:8px}
+.note ul{margin-left:18px;color:var(--muted);font-size:13.5px}
+.note li{margin-bottom:4px}
+a.link{color:var(--green);text-decoration:none;font-weight:600}
+a.link:hover{text-decoration:underline}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--muted);font-size:13px}
+textarea{width:100%;margin-top:10px;padding:10px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;color:var(--text);font:11px/1.5 monospace;resize:vertical}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>⚡ Bet Analyzer</h1>
+    <p>Turn your {{PROVIDER_NAME}} bet history into a profit, ROI, win-rate and odds-range report — with one click. No account, no install, no upload.</p>
+    <a class="drag-btn" href="{{BOOKMARKLET_HREF}}">⚡ Analyze My Bets<small>drag me to your bookmarks bar</small></a>
+  </div>
+
+  <div class="steps">
+    <div class="step"><span class="n">1</span><h3>Drag the button above</h3><p>Drag “⚡ Analyze My Bets” into your bookmarks bar (if you don't see it, press Ctrl+Shift+B).</p></div>
+    <div class="step"><span class="n">2</span><h3>Open your bet history</h3><p>Log in to {{PROVIDER_NAME}} and go to your Bet History page.</p></div>
+    <div class="step"><span class="n">3</span><h3>Click the bookmark</h3><p>Your full performance report opens in a new tab. That's it.</p></div>
+  </div>
+
+  <div class="note">
+    <h2>What it does &amp; privacy</h2>
+    <p>The bookmark reads your bet history the same way the site itself does, then computes the report <b>entirely in your browser</b>:</p>
+    <ul>
+      <li>Total stakes, payouts, net profit/loss, ROI, win rate</li>
+      <li>Performance by odds range (low / medium / high / exotic)</li>
+      <li>Daily trends for your most recent betting days</li>
+    </ul>
+    <p>🔒 Your data never leaves your computer — nothing is uploaded or stored anywhere. Only your own bets are read, nothing else.</p>
+    <p>See it in action: <a class="link" href="{{DEMO_HREF}}">open a sample report →</a></p>
+    <details>
+      <summary>Prefer to copy the code instead of dragging?</summary>
+      <textarea id="ba-code" readonly rows="6">{{BOOKMARKLET_CODE}}</textarea>
+      <button onclick="var t=document.getElementById('ba-code');t.select();if(navigator.clipboard){navigator.clipboard.writeText(t.value)}">Copy code</button>
+      <p style="margin-top:8px">Then create a new bookmark anywhere and paste this as the URL. Built {{BUILD_DATE}}.</p>
+    </details>
+  </div>
+
+  <footer>⚡ Bet Analyzer · open-source · works on Chrome, Edge and Firefox</footer>
+</div>
+</body>
+</html>
