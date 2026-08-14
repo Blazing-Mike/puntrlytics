@@ -11,14 +11,34 @@ export function runBookmarklet(provider: Provider): void {
   overlay.setAttribute(
     "style",
     [
-      "position:fixed", "top:16px", "right:16px", "z-index:2147483647",
-      "background:#0f1420", "color:#e5e7eb", "font:13px/1.5 system-ui,sans-serif",
-      "padding:14px 18px", "border-radius:10px", "box-shadow:0 8px 30px rgba(0,0,0,.35)",
-      "max-width:320px", "border:1px solid #1f2937",
+      "position:fixed",
+      "top:16px",
+      "right:16px",
+      "z-index:2147483647",
+      "background:#0f1420",
+      "color:#e5e7eb",
+      "font:13px/1.5 system-ui,sans-serif",
+      "padding:14px 18px",
+      "border-radius:10px",
+      "box-shadow:0 8px 30px rgba(0,0,0,.35)",
+      "max-width:320px",
+      "border:1px solid #1f2937",
     ].join(";"),
   );
+  // Provider label right in the toast so you always know which site's data
+  // is being read (SportyBet vs football.com) — useful with the auto-detect
+  // bookmarklet that runs on both sites.
+  const esc = (s: string): string =>
+    s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
   overlay.innerHTML =
-    '<div style="font-weight:700;margin-bottom:4px;color:#10b981">⚡ Bet Analyzer</div>' +
+    '<div style="font-weight:700;margin-bottom:4px;color:#10b981">⚡ Bet Analyzer — ' +
+    esc(provider.name) +
+    "</div>" +
     '<div id="ba-msg" style="opacity:.85">Starting…</div>';
   document.body.appendChild(overlay);
 
@@ -36,11 +56,16 @@ export function runBookmarklet(provider: Provider): void {
     window.setTimeout(cleanup, 12000);
   };
 
+  msg("Reading " + provider.name + " bet history…");
   provider
     .fetchBets(msg)
     .then((bets) => {
       if (!bets || bets.length === 0) {
-        throw new Error("No bets found — are you logged in and on the Bet History page?");
+        throw new Error(
+          "No bets found on " +
+            provider.name +
+            " — are you logged in and on the Bet History page?",
+        );
       }
       msg("Analyzing " + bets.length + " bets…");
       const report = computeReport(bets);
@@ -51,7 +76,9 @@ export function runBookmarklet(provider: Provider): void {
 
       const w = window.open("", "_blank");
       if (!w) {
-        throw new Error("Popup blocked — please allow popups for this site and try again.");
+        throw new Error(
+          "Popup blocked — please allow popups for this site and try again.",
+        );
       }
       w.document.open();
       w.document.write(html);

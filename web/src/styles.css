@@ -80,4 +80,22 @@
     color: #080a0f;
     border-color: #f7b955;
   }
+  /* Small "1 bookmark for all" badge on the auto-detect tab */
+  .ba-provider-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 9999px;
+    background: rgba(68, 210, 127, 0.16);
+    color: #44d27f;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    vertical-align: 1px;
+  }
+  .ba-provider-tab.ba-active .ba-provider-badge {
+    background: rgba(8, 10, 15, 0.16);
+    color: #080a0f;
+  }
 }

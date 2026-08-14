@@ -60,21 +60,50 @@ export interface Provider {
 
 export type Params = Record<string, string | number | undefined | null>;
 
+// Normalize an API URL before fetching: resolve relative / protocol-relative
+// paths against the page origin (so the request stays same-origin with the
+// logged-in session), and drop an accidentally duplicated origin segment.
+//
+// Old/edited bookmarklet builds could end up with a doubled URL like
+// "https://host/api/ng//host/api/ng/orders/..." — this collapses that back to
+// "https://host/api/ng/orders/..." so a stale bookmarklet still works.
+export function normalizeApiUrl(baseUrl: string, origin?: string): string {
+  let u = String(baseUrl).trim();
+  if (!/^[a-z][a-z0-9+.\-]*:/i.test(u)) {
+    const base =
+      origin || (typeof location !== "undefined" ? location.origin : "");
+    u = new URL(u, base || undefined).href;
+  }
+  const parsed = new URL(u);
+  const host = parsed.hostname.toLowerCase();
+  const segs = parsed.pathname.split("/");
+  const dup = segs.findIndex((s) => {
+    const l = s.toLowerCase();
+    return l === host || l === "www." + host;
+  });
+  if (dup >= 0) parsed.pathname = "/" + segs.slice(dup + 1).join("/");
+  return parsed.href;
+}
+
 // Fetch JSON from the same origin (uses the logged-in session cookies).
 export function fetchJson(
   baseUrl: string,
   params?: Params,
   init?: RequestInit,
 ): Promise<unknown> {
-  const url = new URL(baseUrl);
+  const url = new URL(normalizeApiUrl(baseUrl));
   for (const k in params || {}) {
     const v = (params as Params)[k];
-    if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
+    if (v !== undefined && v !== null && v !== "")
+      url.searchParams.set(k, String(v));
   }
   return fetch(
     url,
     Object.assign(
-      { credentials: "include", headers: { Accept: "application/json, text/plain, */*" } },
+      {
+        credentials: "include",
+        headers: { Accept: "application/json, text/plain, */*" },
+      },
       init || {},
     ),
   ).then((res) => {
@@ -95,7 +124,8 @@ export function pick(obj: Record<string, unknown>, keys: string[]): unknown {
 // Coerce a number/string ("1,234.50", "₦300.00") to a number.
 export function toNum(v: unknown): number {
   if (v === undefined || v === null || v === "") return 0;
-  const n = typeof v === "number" ? v : parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+  const n =
+    typeof v === "number" ? v : parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
   return Number.isFinite(n) ? n : 0;
 }
 
@@ -113,7 +143,10 @@ export function parseDate(v: unknown): string {
   if (slash) return slash[0];
   const num = Number(s);
   if (Number.isFinite(num) && num > 1e9) {
-    return new Date(num > 1e12 ? num : num * 1000).toISOString().replace("T", " ").substring(0, 19);
+    return new Date(num > 1e12 ? num : num * 1000)
+      .toISOString()
+      .replace("T", " ")
+      .substring(0, 19);
   }
   return s;
 }
@@ -145,13 +178,55 @@ export function computeReport(bets: Bet[]): Report {
   let settledStakes = 0;
   let settledNetProfit = 0;
 
-  const counts: Record<string, number> = { Won: 0, Lost: 0, Void: 0, Open: 0, Unknown: 0 };
+  const counts: Record<string, number> = {
+    Won: 0,
+    Lost: 0,
+    Void: 0,
+    Open: 0,
+    Unknown: 0,
+  };
 
   const odds: OddsBucket[] = [
-    { key: "low",    label: "Low Odds (< 1.50)",    stake: 0, profit: 0, won: 0, total: 0, winPct: 0, roi: 0 },
-    { key: "med",    label: "Medium (1.50 - 2.50)", stake: 0, profit: 0, won: 0, total: 0, winPct: 0, roi: 0 },
-    { key: "high",   label: "High (2.50 - 5.00)",   stake: 0, profit: 0, won: 0, total: 0, winPct: 0, roi: 0 },
-    { key: "exotic", label: "Exotic (5.00+)",       stake: 0, profit: 0, won: 0, total: 0, winPct: 0, roi: 0 },
+    {
+      key: "low",
+      label: "Low Odds (< 1.50)",
+      stake: 0,
+      profit: 0,
+      won: 0,
+      total: 0,
+      winPct: 0,
+      roi: 0,
+    },
+    {
+      key: "med",
+      label: "Medium (1.50 - 2.50)",
+      stake: 0,
+      profit: 0,
+      won: 0,
+      total: 0,
+      winPct: 0,
+      roi: 0,
+    },
+    {
+      key: "high",
+      label: "High (2.50 - 5.00)",
+      stake: 0,
+      profit: 0,
+      won: 0,
+      total: 0,
+      winPct: 0,
+      roi: 0,
+    },
+    {
+      key: "exotic",
+      label: "Exotic (5.00+)",
+      stake: 0,
+      profit: 0,
+      won: 0,
+      total: 0,
+      winPct: 0,
+      roi: 0,
+    },
   ];
 
   const timeline: Record<string, DaySummary> = {};
@@ -164,7 +239,8 @@ export function computeReport(bets: Bet[]): Report {
     const payout = toNum(bet.payout);
     const o = toNum(bet.odds) || 1.0;
     const status = bet.status || "Unknown";
-    const profit = status === "Won" ? payout - stake : status === "Lost" ? -stake : 0;
+    const profit =
+      status === "Won" ? payout - stake : status === "Lost" ? -stake : 0;
 
     totalStakes += stake;
     totalPayouts += payout;
@@ -178,8 +254,10 @@ export function computeReport(bets: Bet[]): Report {
     }
 
     // Odds bucket
-    const cat = o < 1.5 ? "low" : o <= 2.5 ? "med" : o <= 5.0 ? "high" : "exotic";
-    const d = odds[cat === "low" ? 0 : cat === "med" ? 1 : cat === "high" ? 2 : 3];
+    const cat =
+      o < 1.5 ? "low" : o <= 2.5 ? "med" : o <= 5.0 ? "high" : "exotic";
+    const d =
+      odds[cat === "low" ? 0 : cat === "med" ? 1 : cat === "high" ? 2 : 3];
     d.total++;
     d.stake += stake;
     d.profit += profit;
@@ -187,7 +265,9 @@ export function computeReport(bets: Bet[]): Report {
 
     // Day bucket
     const rawDate = bet.date || "";
-    const m = rawDate.match(/^\d{4}-\d{2}-\d{2}/) || rawDate.match(/^\d{2}\/\d{2}\/\d{4}/);
+    const m =
+      rawDate.match(/^\d{4}-\d{2}-\d{2}/) ||
+      rawDate.match(/^\d{2}\/\d{2}\/\d{4}/);
     const dateKey = m ? m[0] : "Unknown Date";
     let t = timeline[dateKey];
     if (!t) {
@@ -202,10 +282,20 @@ export function computeReport(bets: Bet[]): Report {
 
     // Highlights
     if (status === "Won" && payout > biggestWin.payout) {
-      biggestWin = { payout, stake, date: bet.date || "", betId: bet.betId || "" };
+      biggestWin = {
+        payout,
+        stake,
+        date: bet.date || "",
+        betId: bet.betId || "",
+      };
     }
     if (status === "Lost" && stake > biggestLoss.stake) {
-      biggestLoss = { payout, stake, date: bet.date || "", betId: bet.betId || "" };
+      biggestLoss = {
+        payout,
+        stake,
+        date: bet.date || "",
+        betId: bet.betId || "",
+      };
     }
   }
 

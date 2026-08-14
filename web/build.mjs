@@ -151,13 +151,25 @@ const escHtml = (s) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+// Display name used in the page copy for each provider. `auto` is the single
+// self-detecting bookmarklet, so its copy name lists the sites it covers.
 const PROVIDER_NAMES = {
+  auto: "SportyBet / football.com",
+  football: "football.com",
+  sportybet: "SportyBet",
+};
+
+// Shorter label used on the provider switcher tab itself.
+const PROVIDER_TAB_NAMES = {
+  auto: "Auto-detect",
   football: "football.com",
   sportybet: "SportyBet",
 };
 
 const primary =
-  bookmarklets.find((b) => b.id === "football") || bookmarklets[0];
+  bookmarklets.find((b) => b.id === "auto") ||
+  bookmarklets.find((b) => b.id === "football") ||
+  bookmarklets[0];
 
 // Options for the provider switcher on the install page (id, display name,
 // full bookmarklet URL, and the raw code for the "copy" box).
@@ -168,14 +180,21 @@ const providerOptions = bookmarklets.map((b) => ({
   code: b.code,
 }));
 
-// Render one pill tab per provider.
+// Render one pill tab per provider. The auto-detect tab is first and gets a
+// hint explaining it covers every site.
 const providerTabs = bookmarklets
-  .map(
-    (b) =>
-      `<button type="button" class="ba-provider-tab" data-provider="${b.id}" aria-pressed="false">${
-        PROVIDER_NAMES[b.id] || b.id
-      }</button>`,
-  )
+  .map((b, i) => {
+    const label = PROVIDER_TAB_NAMES[b.id] || PROVIDER_NAMES[b.id] || b.id;
+    const hint =
+      b.id === "auto"
+        ? ' title="One bookmarklet — picks SportyBet or football.com automatically"'
+        : "";
+    const badge =
+      b.id === "auto"
+        ? ' <span class="ba-provider-badge" aria-hidden="true">1 bookmark for all</span>'
+        : "";
+    return `<button type="button" class="ba-provider-tab" data-provider="${b.id}" aria-pressed="false"${hint}>${label}${badge}</button>`;
+  })
   .join("");
 
 let html = tpl;
