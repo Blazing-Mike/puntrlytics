@@ -60,28 +60,39 @@ export interface Provider {
 
 export type Params = Record<string, string | number | undefined | null>;
 
-// Normalize an API URL before fetching: resolve relative / protocol-relative
-// paths against the page origin (so the request stays same-origin with the
-// logged-in session), and drop an accidentally duplicated origin segment.
-//
-// Old/edited bookmarklet builds could end up with a doubled URL like
-// "https://host/api/ng//host/api/ng/orders/..." — this collapses that back to
-// "https://host/api/ng/orders/..." so a stale bookmarklet still works.
+// Normalize an API URL before fetching:
+//   1. Resolve relative / protocol-relative paths against the page origin (so
+//      the request stays same-origin with the logged-in session).
+//   2. Drop an accidentally duplicated origin segment. Old/edited bookmarklet
+//      builds could end up with a doubled URL like
+//      "https://host/api/ng//host/api/ng/orders/..." — this collapses it back
+//      to "https://host/api/ng/orders/...".
+//   3. The bookmarklet is same-origin by design, so the final host is always
+//      forced to the site you're currently on. This also corrects stale
+//      bookmarklets that hardcoded a wrong/mangled host.
 export function normalizeApiUrl(baseUrl: string, origin?: string): string {
+  const pageOrigin =
+    origin || (typeof location !== "undefined" ? location.origin : "");
   let u = String(baseUrl).trim();
   if (!/^[a-z][a-z0-9+.\-]*:/i.test(u)) {
-    const base =
-      origin || (typeof location !== "undefined" ? location.origin : "");
-    u = new URL(u, base || undefined).href;
+    u = new URL(u, pageOrigin || undefined).href;
   }
   const parsed = new URL(u);
   const host = parsed.hostname.toLowerCase();
+
   const segs = parsed.pathname.split("/");
   const dup = segs.findIndex((s) => {
     const l = s.toLowerCase();
     return l === host || l === "www." + host;
   });
   if (dup >= 0) parsed.pathname = "/" + segs.slice(dup + 1).join("/");
+
+  if (pageOrigin) {
+    const page = new URL(pageOrigin);
+    if (parsed.origin !== page.origin) {
+      return page.origin + parsed.pathname + parsed.search;
+    }
+  }
   return parsed.href;
 }
 
