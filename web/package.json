@@ -6,10 +6,12 @@
   "description": "Bookmarklet-based bet analyzer web app — shared core, per-provider collectors, self-contained bookmarklets.",
   "scripts": {
     "build": "node build.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:providers": "node tests/run-provider-tests.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.12",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5.9.3"
   }
 }

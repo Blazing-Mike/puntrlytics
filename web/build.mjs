@@ -9,6 +9,7 @@
 // rebuild — the install page picks up the new bookmarklet automatically.
 
 import { build } from "esbuild";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -19,6 +20,39 @@ const entriesDir = path.join(src, "entries");
 const dist = path.join(root, "dist");
 
 fs.mkdirSync(dist, { recursive: true });
+
+// 0) Static assets (screenshots, etc.) --------------------------------
+const staticDir = path.join(root, "static");
+if (fs.existsSync(staticDir)) {
+  for (const f of fs.readdirSync(staticDir)) {
+    const src = path.join(staticDir, f);
+    const dest = path.join(dist, f);
+    fs.copyFileSync(src, dest);
+    console.log(`✔ static/${f} → dist/${f}`);
+  }
+}
+
+const tailwindOut = path.join(dist, "tailwind.css");
+const tailwindCli = path.join(
+  root,
+  "node_modules",
+  "tailwindcss",
+  "lib",
+  "cli.js",
+);
+execFileSync(
+  process.execPath,
+  [
+    tailwindCli,
+    "-i",
+    path.join(src, "styles.css"),
+    "-o",
+    tailwindOut,
+    "--minify",
+  ],
+  { cwd: root, stdio: "inherit" },
+);
+const tailwindCss = fs.readFileSync(tailwindOut, "utf8");
 
 const SKIP_AS_BOOKMARKLET = new Set(["demo.ts", "verify.ts"]);
 
@@ -38,6 +72,7 @@ for (const f of bookmarkletEntries) {
     minify: true,
     format: "iife",
     target: ["es2019"],
+    define: { __BET_ANALYZER_CSS__: JSON.stringify(tailwindCss) },
     outfile: path.join(dist, `bookmarklet-${id}.js`),
   });
   const code = fs.readFileSync(path.join(dist, `bookmarklet-${id}.js`), "utf8");
@@ -46,7 +81,9 @@ for (const f of bookmarkletEntries) {
   bookmarklets.push({ id, code, url });
   const kb = (code.length / 1024).toFixed(1);
   const warn = code.length > 32000 ? "  ⚠ >32KB (may not work in Safari)" : "";
-  console.log(`✔ bookmarklet-${id}.js  ${kb} KB minified, URL ${url.length} chars${warn}`);
+  console.log(
+    `✔ bookmarklet-${id}.js  ${kb} KB minified, URL ${url.length} chars${warn}`,
+  );
 }
 
 // 2) Demo + verify bundles (Node-importable ESM) -------------------
@@ -57,6 +94,7 @@ await build({
   bundle: true,
   format: "esm",
   target: ["node18"],
+  define: { __BET_ANALYZER_CSS__: JSON.stringify(tailwindCss) },
   outfile: demoBundle,
 });
 await build({
@@ -98,16 +136,48 @@ if (fs.existsSync(betsPath)) {
   );
   if (!ok) process.exitCode = 1;
 } else {
-  console.log("ℹ no bets_raw.json at project root — skipping core verification");
+  console.log(
+    "ℹ no bets_raw.json at project root — skipping core verification",
+  );
 }
 
 // 4) Install / landing page ---------------------------------------
 const tplPath = path.join(root, "template", "install.html");
 const tpl = fs.readFileSync(tplPath, "utf8");
 const escHtml = (s) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 
-const primary = bookmarklets.find((b) => b.id === "football") || bookmarklets[0];
+const PROVIDER_NAMES = {
+  football: "football.com",
+  sportybet: "SportyBet",
+};
+
+const primary =
+  bookmarklets.find((b) => b.id === "football") || bookmarklets[0];
+
+// Options for the provider switcher on the install page (id, display name,
+// full bookmarklet URL, and the raw code for the "copy" box).
+const providerOptions = bookmarklets.map((b) => ({
+  id: b.id,
+  name: PROVIDER_NAMES[b.id] || b.id,
+  href: b.url,
+  code: b.code,
+}));
+
+// Render one pill tab per provider.
+const providerTabs = bookmarklets
+  .map(
+    (b) =>
+      `<button type="button" class="ba-provider-tab" data-provider="${b.id}" aria-pressed="false">${
+        PROVIDER_NAMES[b.id] || b.id
+      }</button>`,
+  )
+  .join("");
+
 let html = tpl;
 if (primary) {
   html = html.split("{{BOOKMARKLET_HREF}}").join(primary.url);
@@ -116,11 +186,23 @@ if (primary) {
   html = html.split("{{BOOKMARKLET_HREF}}").join("#");
   html = html.split("{{BOOKMARKLET_CODE}}").join("(no provider built)");
 }
-html = html.split("{{PROVIDER_NAME}}").join(primary ? "football.com" : "your bookmaker");
+html = html
+  .split("{{PROVIDER_NAME}}")
+  .join(primary ? PROVIDER_NAMES[primary.id] || primary.id : "your bookmaker");
+html = html.split("{{PROVIDER_TABS}}").join(providerTabs);
+// Escape "<" in the JSON so "</script>" sequences can't break the inline script.
+html = html
+  .split("{{PROVIDER_OPTIONS_JSON}}")
+  .join(JSON.stringify(providerOptions).replace(/</g, "\\u003c"));
 html = html.split("{{BUILD_DATE}}").join(new Date().toISOString().slice(0, 10));
 html = html.split("{{DEMO_HREF}}").join("demo.html");
+html = html.split("{{DEMO_SHOT}}").join("demo-dashboard.png");
+html = html.split("{{TAILWIND_CSS}}").join(tailwindCss);
 fs.writeFileSync(path.join(dist, "index.html"), html, "utf8");
 console.log("✔ index.html (install page)");
+console.log(
+  `  providers: ${providerOptions.map((p) => `${p.name} (bookmarklet-${p.id}.js, ${(p.href.length / 1024).toFixed(1)} KB URL)`).join(" · ")}`,
+);
 
 // Clean up temp bundles
 fs.rmSync(demoBundle, { force: true });

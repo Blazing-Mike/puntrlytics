@@ -26,43 +26,28 @@ function signed(n: number, digits = 1): string {
   return (n >= 0 ? "+" : "") + n.toFixed(digits) + "%";
 }
 
-const CSS = `
-:root{--bg:#0b1020;--panel:#121a2e;--panel2:#0e1526;--border:#1f2a45;--text:#e7edf7;--muted:#8fa0c2;--green:#10b981;--red:#f43f5e;--blue:#3b82f6;--amber:#f59e0b}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;padding:32px 20px 60px}
-.wrap{max-width:880px;margin:0 auto}
-header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:24px}
-header h1{font-size:22px;font-weight:800;letter-spacing:.3px}
-header h1 .zap{color:var(--green)}
-header .sub{color:var(--muted);font-size:13px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-.kpi{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:14px;padding:16px}
-.kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px}
-.kpi .value{font-size:20px;font-weight:800}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
-.card h2{font-size:14px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:14px}
-.hint{font-size:11px;color:var(--muted);margin-top:4px}
-.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.amber{color:var(--amber)}
-.chips{display:flex;gap:10px;flex-wrap:wrap}
-.chip{border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px;text-align:right;padding:6px 8px;border-bottom:1px solid var(--border)}
-th:first-child,td:first-child{text-align:left}
-td{padding:9px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
-tr:last-child td{border-bottom:none}
-.hl{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.hl .box{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px}
-.hl .box .t{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
-.hl .box .value{font-size:18px;font-weight:800;margin-bottom:2px}
-.day{display:grid;grid-template-columns:110px 70px 1fr 130px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
-.day:last-child{border-bottom:none}
-.day .d{font-weight:600;font-size:13px}
-.day .m{color:var(--muted);font-size:12px;text-align:right}
-.bar{height:10px;border-radius:99px;background:#1b2540;overflow:hidden}
-.bar i{display:block;height:100%;border-radius:99px}
-footer{color:var(--muted);font-size:12px;text-align:center;margin-top:28px;max-width:640px;margin-left:auto;margin-right:auto}
-@media(max-width:560px){.day{grid-template-columns:90px 56px 1fr 104px}.kpis{grid-template-columns:1fr 1fr}}
-`;
+declare const __BET_ANALYZER_CSS__: string;
+
+const CSS = __BET_ANALYZER_CSS__;
+const page = "relative mx-auto max-w-[1040px]";
+const sectionCard =
+  "mb-[18px] rounded-lg border border-rule bg-ticket/90 p-3.5 shadow-[0_18px_46px_rgba(0,0,0,.18)] sm:p-[18px]";
+const sectionTitle =
+  "mb-3.5 flex items-center gap-2.5 font-utility text-xs uppercase tracking-[1.5px] text-faint before:block before:w-8 before:border-t before:border-dashed before:border-gold";
+const kpiCard =
+  "min-h-[122px] overflow-hidden rounded-lg border border-b-[5px] border-rule bg-gradient-to-b from-ticket to-ticket2 p-3.5 transition motion-safe:hover:-translate-y-0.5";
+const kpiLabel =
+  "mb-3 font-utility text-[11px] uppercase tracking-[1.3px] text-faint";
+const kpiValue =
+  "break-words font-display text-[clamp(21px,3vw,32px)] font-black leading-none";
+const hint = "mt-1.5 text-[11px] text-faint";
+const colorClass: Record<string, string> = {
+  green: "text-lime",
+  red: "text-rose",
+  blue: "text-cyan",
+  amber: "text-gold",
+  "": "",
+};
 
 export function renderReport(report: Report, opts: RenderOptions): string {
   const cur = opts.currency || "NGN";
@@ -72,11 +57,11 @@ export function renderReport(report: Report, opts: RenderOptions): string {
 
   // --- KPI cards -------------------------------------------------
   const kpis = `
-    <div class="kpi"><div class="label">Total Stakes</div><div class="value">${fmtMoney(report.totalStakes, cur)}</div></div>
-    <div class="kpi"><div class="label">Total Payouts</div><div class="value">${fmtMoney(report.totalPayouts, cur)}</div></div>
-    <div class="kpi"><div class="label">Net Profit / Loss</div><div class="value ${report.netProfit >= 0 ? "green" : "red"}">${fmtMoney(report.netProfit, cur, true)}</div></div>
-    <div class="kpi"><div class="label">ROI</div><div class="value ${report.roi >= 0 ? "green" : "red"}">${signed(report.roi, 2)}</div><div class="hint">settled bets only</div></div>
-    <div class="kpi"><div class="label">Win Rate</div><div class="value">${report.winRate.toFixed(2)}%</div><div class="hint">${c.Won} won / ${report.settledTotal} settled</div></div>`;
+    <div class="${kpiCard} max-[860px]:first:col-span-2 max-[560px]:first:col-auto"><div class="${kpiLabel}">Total Stakes</div><div class="${kpiValue}">${fmtMoney(report.totalStakes, cur)}</div></div>
+    <div class="${kpiCard}"><div class="${kpiLabel}">Total Payouts</div><div class="${kpiValue}">${fmtMoney(report.totalPayouts, cur)}</div></div>
+    <div class="${kpiCard}"><div class="${kpiLabel}">Net Profit / Loss</div><div class="${kpiValue} ${report.netProfit >= 0 ? "text-lime" : "text-rose"}">${fmtMoney(report.netProfit, cur, true)}</div></div>
+    <div class="${kpiCard}"><div class="${kpiLabel}">ROI</div><div class="${kpiValue} ${report.roi >= 0 ? "text-lime" : "text-rose"}">${signed(report.roi, 2)}</div><div class="${hint}">settled bets only</div></div>
+    <div class="${kpiCard}"><div class="${kpiLabel}">Win Rate</div><div class="${kpiValue}">${report.winRate.toFixed(2)}%</div><div class="${hint}">${c.Won} won / ${report.settledTotal} settled</div></div>`;
 
   // --- status chips ----------------------------------------------
   const chipDefs: Array<[string, string]> = [
@@ -87,7 +72,10 @@ export function renderReport(report: Report, opts: RenderOptions): string {
     ["Unknown", "amber"],
   ];
   const chips = chipDefs
-    .map(([label, cls]) => `<span class="chip ${cls}">${label}: ${c[label] || 0}</span>`)
+    .map(
+      ([label, cls]) =>
+        `<span class="whitespace-nowrap rounded-md border border-rule bg-blacktop px-3 py-2.5 text-center text-[13px] font-extrabold ${colorClass[cls]}">${label}: ${c[label] || 0}</span>`,
+    )
     .join("");
 
   // --- odds range table ------------------------------------------
@@ -95,12 +83,12 @@ export function renderReport(report: Report, opts: RenderOptions): string {
     .map((d) => {
       const pCol = d.profit >= 0 ? "green" : "red";
       return `<tr>
-        <td>${esc(d.label)}</td>
-        <td>${d.total}</td>
-        <td>${pct(d.winPct)}</td>
-        <td>${fmtMoney(d.stake, cur)}</td>
-        <td class="${pCol}">${fmtMoney(d.profit, cur, true)}</td>
-        <td class="${pCol}">${signed(d.roi)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-left">${esc(d.label)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right">${d.total}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right">${pct(d.winPct)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right">${fmtMoney(d.stake, cur)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right ${colorClass[pCol]}">${fmtMoney(d.profit, cur, true)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right ${colorClass[pCol]}">${signed(d.roi)}</td>
       </tr>`;
     })
     .join("");
@@ -111,29 +99,34 @@ export function renderReport(report: Report, opts: RenderOptions): string {
   const dayRows = days
     .map((d) => {
       const barW = Math.max(2, (Math.abs(d.profit) / maxAbs) * 100);
-      const barColor = d.profit > 0 ? "var(--green)" : d.profit < 0 ? "var(--red)" : "#475569";
+      const barColor =
+        d.profit > 0 ? "var(--green)" : d.profit < 0 ? "var(--red)" : "#475569";
       const pCol = d.profit >= 0 ? "green" : "red";
-      return `<div class="day">
-        <div class="d">${esc(d.date)}</div>
-        <div class="m">${d.total} bet${d.total === 1 ? "" : "s"}</div>
-        <div class="bar"><i style="width:${barW.toFixed(1)}%;background:${barColor}"></i></div>
-        <div class="m ${pCol}">${fmtMoney(d.profit, cur, true)}</div>
+      return `<div class="grid grid-cols-[116px_74px_minmax(120px,1fr)_128px] items-center gap-3 border-b border-faint/15 py-2.5 last:border-b-0 max-[560px]:grid-cols-[1fr_76px] max-[560px]:gap-x-2.5 max-[560px]:gap-y-1.5">
+        <div class="text-[13px] font-extrabold">${esc(d.date)}</div>
+        <div class="whitespace-nowrap text-right text-xs text-faint max-[560px]:text-left">${d.total} bet${d.total === 1 ? "" : "s"}</div>
+        <div class="h-3 overflow-hidden rounded border border-faint/20 bg-blacktop max-[560px]:col-span-full"><i class="block h-full rounded-sm" style="width:${barW.toFixed(1)}%;background:${barColor}"></i></div>
+        <div class="whitespace-nowrap text-right text-xs text-faint ${colorClass[pCol]} max-[560px]:col-start-2 max-[560px]:row-start-1">${fmtMoney(d.profit, cur, true)}</div>
       </div>`;
     })
     .join("");
 
   const trendsBlock = days.length
-    ? `<div class="card"><h2>Daily trends — last ${days.length} active days</h2>
+    ? `<div class="${sectionCard}"><h2 class="${sectionTitle}">Daily trends - last ${days.length} active days</h2>
        ${dayRows}
-       <div class="hint">Bar width scales with the day's net profit.</div></div>`
+       <div class="${hint}">Bar width scales with the day's net profit.</div></div>`
     : "";
 
   // --- highlights ------------------------------------------------
-  const winDate = report.biggestWin.date ? ` · ${esc(report.biggestWin.date)}` : "";
-  const lossDate = report.biggestLoss.date ? ` · ${esc(report.biggestLoss.date)}` : "";
+  const winDate = report.biggestWin.date
+    ? ` · ${esc(report.biggestWin.date)}`
+    : "";
+  const lossDate = report.biggestLoss.date
+    ? ` · ${esc(report.biggestLoss.date)}`
+    : "";
   const highlights = `
-    <div class="box"><div class="t">Biggest win</div><div class="value green">${fmtMoney(report.biggestWin.payout, cur)}</div><div class="hint">${winDate || "—"}</div></div>
-    <div class="box"><div class="t">Biggest loss</div><div class="value red">${fmtMoney(report.biggestLoss.stake, cur)}</div><div class="hint">${lossDate || "—"}</div></div>`;
+    <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest win</div><div class="break-words font-display text-[26px] font-black text-lime">${fmtMoney(report.biggestWin.payout, cur)}</div><div class="${hint}">${winDate || "-"}</div></div>
+    <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest loss</div><div class="break-words font-display text-[26px] font-black text-rose">${fmtMoney(report.biggestLoss.stake, cur)}</div><div class="${hint}">${lossDate || "-"}</div></div>`;
 
   // --- assemble --------------------------------------------------
   return `<!doctype html>
@@ -141,30 +134,30 @@ export function renderReport(report: Report, opts: RenderOptions): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bet Analyzer — ${esc(opts.providerName)}</title>
+<title>Bet Analyzer - ${esc(opts.providerName)}</title>
 <style>${CSS}</style>
 </head>
-<body>
-<div class="wrap">
-  <header>
-    <h1><span class="zap">⚡</span> Bet Analyzer</h1>
-    <span class="sub">${esc(opts.providerName)} · generated ${esc(genAt)} · nothing was uploaded</span>
+<body class="px-[18px] pb-14 pt-7 max-[560px]:px-3 max-[560px]:pb-11 max-[560px]:pt-5">
+<div class="${page}">
+  <header class="mb-[22px] grid grid-cols-[minmax(0,1fr)_auto] items-end gap-[18px] pb-[18px] max-[860px]:grid-cols-1">
+    <h1 class="font-display text-[clamp(34px,6vw,76px)] font-black uppercase leading-[.9]"><span class="text-gold">Bet</span> Analyzer</h1>
+    <span class="max-w-[360px] text-right font-utility text-xs uppercase tracking-[1.4px] text-faint max-[860px]:text-left">${esc(opts.providerName)} / generated ${esc(genAt)} / processed locally</span>
   </header>
   ${
     hasData
-      ? `<section class="kpis">${kpis}</section>
-  <section class="card"><h2>Highlights</h2><div class="hl">${highlights}</div></section>
-  <section class="card"><h2>Status breakdown</h2><div class="chips">${chips}</div></section>
-  <section class="card"><h2>Performance by odds range</h2>
-    <table>
-      <thead><tr><th>Odds range</th><th>Bets</th><th>Win rate</th><th>Total staked</th><th>Net profit</th><th>ROI</th></tr></thead>
+      ? `<section class="mb-[18px] grid grid-cols-5 gap-2.5 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1">${kpis}</section>
+  <section class="${sectionCard}"><h2 class="${sectionTitle}">Highlights</h2><div class="grid grid-cols-2 gap-2.5 max-[560px]:grid-cols-1">${highlights}</div></section>
+  <section class="${sectionCard}"><h2 class="${sectionTitle}">Status breakdown</h2><div class="grid grid-cols-5 gap-2 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1">${chips}</div></section>
+  <section class="${sectionCard}"><h2 class="${sectionTitle}">Performance by odds range</h2>
+    <div class="-m-1 overflow-x-auto"><table class="w-full min-w-[680px] border-collapse text-[13.5px]">
+      <thead><tr><th class="border-b border-dashed border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Odds range</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Bets</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Total staked</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th></tr></thead>
       <tbody>${rows}</tbody>
-    </table>
+    </table></div>
   </section>
   ${trendsBlock}`
-      : `<div class="card">No bets found to analyze.</div>`
+      : `<div class="${sectionCard}">No bets found to analyze.</div>`
   }
-  <footer>🔒 Your bets were processed entirely in your browser and were never uploaded or stored anywhere. Built with ⚡ Bet Analyzer.</footer>
+  <footer class="mx-auto mt-[30px] max-w-[680px] text-center text-xs text-faint">Your bets were processed entirely in your browser and were never uploaded or stored anywhere.</footer>
 </div>
 </body>
 </html>`;

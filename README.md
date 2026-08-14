@@ -2,7 +2,7 @@
 
 Turn your bookmaker bet history into a performance dashboard — net profit/loss, ROI, win rate, odds-range performance, and daily trends.
 
-Works with **football.com** today; more bookmakers (SportyBet, Betano, …) are pluggable via the provider system in `web/`.
+Works with **football.com** and **SportyBet** today; more bookmakers (Betano, …) are pluggable via the provider system in `web/`.
 
 There are **two ways to use it**:
 
@@ -53,17 +53,18 @@ npm run typecheck:web  # tsc --noEmit
 
 Build output (`web/dist/`) — host this folder on any static host:
 
-- `index.html` — install page with the **"⚡ Analyze My Bets"** button to drag into the bookmarks bar
+- `index.html` — install page with the **"⚡ Analyze My Bets"** button to drag into the bookmarks bar (pick your bookmaker with the **football.com / SportyBet** tabs)
 - `demo.html` — sample report (preview the dashboard)
-- `bookmarklet-<provider>.js` / `.txt` — the built bookmarklet and its `javascript:` URL
+- `bookmarklet-<provider>.js` / `.txt` — the built bookmarklets and their `javascript:` URLs
 
-**User flow:** drag the button to the bookmarks bar → log in to football.com → click the bookmark on the Bet History page → report opens in a new tab.
+**User flow:** drag the button to the bookmarks bar → log in to your bookmaker → click the bookmark on the Bet History page → report opens in a new tab. Both providers use the same `realbetlist` JSON API; the normalizer is shared (`web/src/providers/realbetlist.ts`).
 
 ### Adding a bookmaker
 
 1. Log in to the site and find its bet-history JSON API (DevTools → Network).
-2. Write `web/src/providers/<id>.ts` implementing the shared `Provider` interface (a `fetchBets` that returns normalized `Bet[]` — see `web/src/providers/football.ts` for reference).
+2. If it's the same `realbetlist` shape as football.com/SportyBet, add a thin provider via `createRealBetListProvider(...)` (see `web/src/providers/sportybet.ts`). Otherwise write a custom `web/src/providers/<id>.ts` implementing the shared `Provider` interface (a `fetchBets` returning normalized `Bet[]`).
 3. Add `web/src/entries/<id>.ts` and rebuild — the install page picks the new bookmarklet up automatically.
+4. Add a normalization fixture + test in `web/tests/` and run `npm run test:providers` to verify against a real API sample.
 
 ---
 
@@ -77,8 +78,9 @@ web/                TypeScript web app (bookmarklet + dashboard)
   src/core.ts       shared analysis math — same numbers as the CLI
   src/render.ts     dashboard HTML renderer
   src/bookmarklet.ts  bookmarklet runner (fetch → analyze → open report tab)
-  src/providers/    per-bookmaker collectors
+  src/providers/    per-bookmaker collectors (shared realbetlist factory)
   src/entries/      bookmarklet entry point per provider
+  tests/            provider normalization tests (npm run test:providers)
   build.mjs         esbuild pipeline: bookmarklets, demo, install page
   dist/             generated output (host this)
 bets_raw.json       your extracted bet history (generated)
@@ -100,6 +102,6 @@ api_probe.json      raw API dump for debugging (generated)
 
 ## 📝 Notes
 
-- football.com amounts are treated as **NGN (₦)**.
-- football.com has no order-level odds field — total odds is computed as the **product of the selections' odds**.
-- football.com status codes: `winningStatus` 20 = Won, 30 = Lost, 10 = Void, 40 = Open.
+- football.com and SportyBet amounts are treated as **NGN (₦)**.
+- No order-level odds field on either site — total odds is the **product of the selections' odds**.
+- `winningStatus` codes: 20 = Won, 30 = Lost, 10 = Void, 40 = Open.

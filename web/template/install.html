@@ -1,71 +1,235 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>⚡ Bet Analyzer — analyze your {{PROVIDER_NAME}} bets in one click</title>
-<style>
-:root{--bg:#0b1020;--panel:#121a2e;--panel2:#0e1526;--border:#1f2a45;--text:#e7edf7;--muted:#8fa0c2;--green:#10b981;--amber:#f59e0b}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;padding:40px 20px 60px}
-.wrap{max-width:720px;margin:0 auto}
-.hero{text-align:center;margin-bottom:36px}
-.hero h1{font-size:30px;font-weight:800;letter-spacing:.3px;margin-bottom:8px}
-.hero p{color:var(--muted);font-size:15px;max-width:520px;margin:0 auto}
-.drag-btn{display:inline-block;margin-top:22px;background:linear-gradient(135deg,#10b981,#059669);color:#04231a;font-weight:800;font-size:18px;padding:16px 30px;border-radius:14px;text-decoration:none;box-shadow:0 10px 30px rgba(16,185,129,.25);transition:transform .15s}
-.drag-btn:hover{transform:translateY(-2px)}
-.drag-btn small{display:block;font-weight:600;font-size:12px;opacity:.75;margin-top:4px}
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:34px 0}
-.step{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px}
-.step .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);color:var(--green);font-weight:800;font-size:14px;margin-bottom:10px}
-.step h3{font-size:14px;margin-bottom:6px}
-.step p{color:var(--muted);font-size:13px}
-.note{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin:18px 0}
-.note h2{font-size:14px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px}
-.note p{font-size:13.5px;color:var(--muted);margin-bottom:8px}
-.note ul{margin-left:18px;color:var(--muted);font-size:13.5px}
-.note li{margin-bottom:4px}
-a.link{color:var(--green);text-decoration:none;font-weight:600}
-a.link:hover{text-decoration:underline}
-details{margin-top:14px}
-summary{cursor:pointer;color:var(--muted);font-size:13px}
-textarea{width:100%;margin-top:10px;padding:10px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;color:var(--text);font:11px/1.5 monospace;resize:vertical}
-footer{color:var(--muted);font-size:12px;text-align:center;margin-top:40px}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="hero">
-    <h1>⚡ Bet Analyzer</h1>
-    <p>Turn your {{PROVIDER_NAME}} bet history into a profit, ROI, win-rate and odds-range report — with one click. No account, no install, no upload.</p>
-    <a class="drag-btn" href="{{BOOKMARKLET_HREF}}">⚡ Analyze My Bets<small>drag me to your bookmarks bar</small></a>
-  </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      Bet Analyzer - analyze your {{PROVIDER_NAME}} bets in one click
+    </title>
+    <style>
+      {{TAILWIND_CSS}}
+    </style>
+  </head>
+  <body
+    class="px-[18px] pb-14 pt-[30px] leading-relaxed max-[520px]:px-3 max-[520px]:pb-11 max-[520px]:pt-5"
+  >
+    <div class="container mx-auto">
+      <div class="mb-[18px] pb-4">
+        <div class="mx-auto max-w-[680px] text-center">
+          <p
+            class="mb-4 font-utility text-xs font-black uppercase tracking-[2.2px] text-gold"
+          >
+            100% private · runs in your browser
+          </p>
+          <h1
+            class="mb-5 font-display text-[clamp(38px,6vw,76px)] font-black uppercase leading-[.9] max-[820px]:text-[clamp(32px,10vw,58px)]"
+          >
+            Bet Analyzer
+          </h1>
+          <p
+            class="mx-auto max-w-[540px] text-[17px] leading-relaxed text-faint"
+          >
+            Turn your <span class="ba-provider-name">{{PROVIDER_NAME}}</span> bet
+            history into a private profit, ROI, win-rate and odds-range report.
+            No account, no install, no upload.
+          </p>
+          <a
+            id="ba-bookmarklet"
+            class="group mt-8 inline-flex items-center justify-center gap-2.5 rounded-full bg-lime px-8 py-[14px] text-[17px] font-black leading-none text-[#07110c] no-underline shadow-[0_16px_38px_rgba(68,210,127,.25)] transition hover:-translate-y-0.5 hover:bg-[#54dd8e] hover:shadow-[0_22px_44px_rgba(68,210,127,.35)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan motion-reduce:transition-none max-[520px]:w-full"
+            href="{{BOOKMARKLET_HREF}}"
+            >Analyze my bets<span
+              class="transition-transform group-hover:translate-x-1"
+              aria-hidden="true"
+              >→</span
+            ></a
+          >
+          <p
+            class="mt-3.5 font-utility text-[11px] font-bold uppercase tracking-[1.8px] text-faint"
+          >
+            Drag the button to your bookmarks bar
+          </p>
+          <div
+            class="mt-5 flex flex-wrap items-center justify-center gap-2"
+            role="group"
+            aria-label="Choose your bookmaker"
+          >
+            <span
+              class="font-utility text-[11px] font-bold uppercase tracking-[1.6px] text-faint"
+              >Bookmaker:</span
+            >{{PROVIDER_TABS}}
+          </div>
+        </div>
+        <div
+          class="mx-auto mt-12 max-w-[920px] overflow-hidden rounded-xl border border-rule bg-blacktop shadow-[0_30px_80px_rgba(0,0,0,.35)]"
+          aria-label="Sample report preview"
+        >
+          <div
+            class="flex items-center gap-2 border-b border-rule bg-ticket2/70 px-4 py-3"
+          >
+            <span class="h-3 w-3 rounded-full bg-rose/80"></span>
+            <span class="h-3 w-3 rounded-full bg-gold/80"></span>
+            <span class="h-3 w-3 rounded-full bg-lime/80"></span>
+            <span
+              class="ml-3 font-utility text-[11px] uppercase tracking-[1px] text-faint"
+              >demo report — <span class="ba-provider-name">{{PROVIDER_NAME}}</span></span
+            >
+          </div>
+          <img
+            class="block h-[560px] w-full object-cover object-top max-[820px]:h-[420px]"
+            src="{{DEMO_SHOT}}"
+            alt="Sample report preview showing total stakes, payouts, net profit, ROI and win rate cards"
+            loading="lazy"
+          />
+        </div>
+      </div>
 
-  <div class="steps">
-    <div class="step"><span class="n">1</span><h3>Drag the button above</h3><p>Drag “⚡ Analyze My Bets” into your bookmarks bar (if you don't see it, press Ctrl+Shift+B).</p></div>
-    <div class="step"><span class="n">2</span><h3>Open your bet history</h3><p>Log in to {{PROVIDER_NAME}} and go to your Bet History page.</p></div>
-    <div class="step"><span class="n">3</span><h3>Click the bookmark</h3><p>Your full performance report opens in a new tab. That's it.</p></div>
-  </div>
+      <div class="my-[18px] grid grid-cols-3 gap-2.5 max-[820px]:grid-cols-1">
+        <div
+          class="h-full rounded-lg border border-rule bg-ticket/90 p-[18px] transition hover:-translate-y-0.5 hover:border-gold/40 max-[520px]:p-[15px]"
+        >
+          <span
+            class="mb-2.5 block font-utility text-xs font-black uppercase tracking-[1.4px] text-gold"
+            >Step 1</span
+          >
+          <h3 class="mb-1.5 text-[15px] font-bold">Drag the button above</h3>
+          <p class="text-[13px] leading-relaxed text-faint">
+            Drag “Analyze my bets” into your bookmarks bar. If the bar is
+            hidden, press Ctrl+Shift+B.
+          </p>
+        </div>
+        <div
+          class="h-full rounded-lg border border-rule bg-ticket/90 p-[18px] transition hover:-translate-y-0.5 hover:border-gold/40 max-[520px]:p-[15px]"
+        >
+          <span
+            class="mb-2.5 block font-utility text-xs font-black uppercase tracking-[1.4px] text-gold"
+            >Step 2</span
+          >
+          <h3 class="mb-1.5 text-[15px] font-bold">Open your bet history</h3>
+          <p class="text-[13px] leading-relaxed text-faint">
+            Log in to <span class="ba-provider-name">{{PROVIDER_NAME}}</span> and
+            go to your Bet History page.
+          </p>
+        </div>
+        <div
+          class="h-full rounded-lg border border-rule bg-ticket/90 p-[18px] transition hover:-translate-y-0.5 hover:border-gold/40 max-[520px]:p-[15px]"
+        >
+          <span
+            class="mb-2.5 block font-utility text-xs font-black uppercase tracking-[1.4px] text-gold"
+            >Step 3</span
+          >
+          <h3 class="mb-1.5 text-[15px] font-bold">Click the bookmark</h3>
+          <p class="text-[13px] leading-relaxed text-faint">
+            Your performance report opens in a new tab.
+          </p>
+        </div>
+      </div>
 
-  <div class="note">
-    <h2>What it does &amp; privacy</h2>
-    <p>The bookmark reads your bet history the same way the site itself does, then computes the report <b>entirely in your browser</b>:</p>
-    <ul>
-      <li>Total stakes, payouts, net profit/loss, ROI, win rate</li>
-      <li>Performance by odds range (low / medium / high / exotic)</li>
-      <li>Daily trends for your most recent betting days</li>
-    </ul>
-    <p>🔒 Your data never leaves your computer — nothing is uploaded or stored anywhere. Only your own bets are read, nothing else.</p>
-    <p>See it in action: <a class="link" href="{{DEMO_HREF}}">open a sample report →</a></p>
-    <details>
-      <summary>Prefer to copy the code instead of dragging?</summary>
-      <textarea id="ba-code" readonly rows="6">{{BOOKMARKLET_CODE}}</textarea>
-      <button onclick="var t=document.getElementById('ba-code');t.select();if(navigator.clipboard){navigator.clipboard.writeText(t.value)}">Copy code</button>
-      <p style="margin-top:8px">Then create a new bookmark anywhere and paste this as the URL. Built {{BUILD_DATE}}.</p>
-    </details>
-  </div>
+      <div
+        class="my-[18px] rounded-lg border border-rule bg-ticket/90 p-5 max-[520px]:p-[15px]"
+      >
+        <h2
+          class="mb-3 font-utility text-xs uppercase tracking-[1.5px] text-faint"
+        >
+          What it does &amp; privacy
+        </h2>
+        <p class="mb-2.5 text-[13.5px] text-faint">
+          The bookmark reads your bet history the same way the site itself does,
+          then computes the report <b>entirely in your browser</b>:
+        </p>
+        <ul class="ml-[18px] text-[13.5px] text-faint">
+          <li class="mb-1">
+            Total stakes, payouts, net profit/loss, ROI, win rate
+          </li>
+          <li class="mb-1">
+            Performance by odds range (low / medium / high / exotic)
+          </li>
+          <li class="mb-1">Daily trends for your most recent betting days</li>
+        </ul>
+        <p class="mb-2.5 text-[13.5px] text-faint">
+          Your data never leaves your computer. Nothing is uploaded or stored
+          anywhere. Only your own bets are read.
+        </p>
+        <p class="mb-2.5 text-[13.5px] text-faint">
+          See it in action:
+          <a
+            class="font-extrabold text-lime no-underline hover:underline focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
+            href="{{DEMO_HREF}}"
+            >open a sample report</a
+          >
+        </p>
+        <details class="mt-4">
+          <summary
+            class="cursor-pointer text-[13px] text-faint focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
+          >
+            Prefer to copy the code instead of dragging?
+          </summary>
+          <textarea
+            class="mt-2.5 w-full resize-y rounded-lg border border-rule bg-blacktop p-3 font-mono text-[11px] leading-normal text-ink"
+            id="ba-code"
+            readonly
+            rows="6"
+          >
+{{BOOKMARKLET_CODE}}</textarea
+          >
+          <button
+            class="mt-2.5 cursor-pointer rounded-md border-0 bg-gold px-3 py-2 font-black text-blacktop focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
+            onclick="
+              var t = document.getElementById('ba-code');
+              t.select();
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(t.value);
+              }
+            "
+          >
+            Copy code
+          </button>
+          <p class="mt-2 text-[13.5px] text-faint">
+            Then create a new bookmark anywhere and paste this as the URL. Built
+            {{BUILD_DATE}}.
+          </p>
+        </details>
+      </div>
 
-  <footer>⚡ Bet Analyzer · open-source · works on Chrome, Edge and Firefox</footer>
-</div>
-</body>
+      <footer class="mt-[34px] text-center text-xs text-faint">
+        Bet Analyzer / open-source / works on Chrome, Edge and Firefox
+      </footer>
+    </div>
+    <script>
+      // Provider switcher — swaps the bookmarklet (href + copy code) and the
+      // provider name shown on the page. Tabs are injected by build.mjs.
+      (function () {
+        var opts = {{PROVIDER_OPTIONS_JSON}};
+        if (!opts || !opts.length) return;
+        var link = document.getElementById("ba-bookmarklet");
+        var code = document.getElementById("ba-code");
+        var names = document.querySelectorAll(".ba-provider-name");
+        var tabs = document.querySelectorAll(".ba-provider-tab");
+
+        function apply(id) {
+          var o = null;
+          for (var i = 0; i < opts.length; i++) {
+            if (opts[i].id === id) {
+              o = opts[i];
+              break;
+            }
+          }
+          o = o || opts[0];
+          if (link) link.setAttribute("href", o.href);
+          if (code) code.value = o.code;
+          for (var n = 0; n < names.length; n++) names[n].textContent = o.name;
+          for (var t = 0; t < tabs.length; t++) {
+            var active = tabs[t].getAttribute("data-provider") === o.id;
+            tabs[t].classList.toggle("ba-active", active);
+            tabs[t].setAttribute("aria-pressed", active ? "true" : "false");
+          }
+        }
+        for (var k = 0; k < tabs.length; k++) {
+          tabs[k].addEventListener("click", function () {
+            apply(this.getAttribute("data-provider"));
+          });
+        }
+        apply(opts[0].id);
+      })();
+    </script>
+  </body>
 </html>
