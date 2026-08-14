@@ -54,13 +54,27 @@ execFileSync(
 );
 const tailwindCss = fs.readFileSync(tailwindOut, "utf8");
 
-const SKIP_AS_BOOKMARKLET = new Set(["demo.ts", "verify.ts"]);
+const SKIP_AS_BOOKMARKLET = new Set(["demo.ts", "verify.ts", "dashboard.ts"]);
 
 const entries = fs
   .readdirSync(entriesDir)
   .filter((f) => f.endsWith(".ts"))
   .sort();
 const bookmarkletEntries = entries.filter((f) => !SKIP_AS_BOOKMARKLET.has(f));
+
+// Resolve the public host early: the bookmarklet needs it to open the hosted
+// /dashboard page (for cross-origin persistence), and the loader uses it to
+// inject the latest runtime.
+const HOST = (() => {
+  const raw =
+    process.env.BOOKMARKLET_HOST ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
+    "";
+  if (!raw) return "";
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : "https://" + raw;
+  return withScheme.replace(/\/+$/, "");
+})();
 
 // 1) Bookmarklets -------------------------------------------------
 const bookmarklets = [];
@@ -72,7 +86,10 @@ for (const f of bookmarkletEntries) {
     minify: true,
     format: "iife",
     target: ["es2019"],
-    define: { __BET_ANALYZER_CSS__: JSON.stringify(tailwindCss) },
+    define: {
+      __BET_ANALYZER_CSS__: JSON.stringify(tailwindCss),
+      __BET_ANALYZER_HOST__: JSON.stringify(HOST),
+    },
     outfile: path.join(dist, `bookmarklet-${id}.js`),
   });
   const code = fs.readFileSync(path.join(dist, `bookmarklet-${id}.js`), "utf8");
@@ -90,17 +107,6 @@ for (const f of bookmarkletEntries) {
 // The tiny "loader" is what users actually drag: it injects the latest
 // runtime script from this host, so future updates reach every user without
 // them ever re-dragging the bookmarklet again.
-const HOST = (() => {
-  const raw =
-    process.env.BOOKMARKLET_HOST ||
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-    process.env.VERCEL_URL ||
-    "";
-  if (!raw) return "";
-  const withScheme = /^https?:\/\//i.test(raw) ? raw : "https://" + raw;
-  return withScheme.replace(/\/+$/, "");
-})();
-
 let loaderUrl = "";
 let loaderCode = "";
 if (HOST) {
@@ -129,6 +135,25 @@ if (HOST) {
     "ℹ set BOOKMARKLET_HOST (or Vercel deployment URL) to enable the auto-updating loader bookmarklet",
   );
 }
+
+// 1c) Hosted dashboard ---------------------------------------------
+// The bookmarklet opens /dashboard#<data>; this page persists reports to ITS
+// own origin's localStorage and renders them, so saved data is accessible at
+// https://<host>/dashboard even after closing the bookmaker's page.
+await build({
+  entryPoints: [path.join(entriesDir, "dashboard.ts")],
+  bundle: true,
+  minify: true,
+  format: "iife",
+  target: ["es2019"],
+  define: { __BET_ANALYZER_CSS__: JSON.stringify(tailwindCss) },
+  outfile: path.join(dist, "dashboard-app.js"),
+});
+fs.copyFileSync(
+  path.join(root, "template", "dashboard.html"),
+  path.join(dist, "dashboard.html"),
+);
+console.log("✔ dashboard.html + dashboard-app.js (hosted analytics)");
 
 // 2) Demo + verify bundles (Node-importable ESM) -------------------
 const demoBundle = path.join(dist, ".demo-bundle.mjs");
