@@ -178,6 +178,31 @@ const { buildDemoHtml } = await import(pathToFileURL(demoBundle).href);
 fs.writeFileSync(path.join(dist, "demo.html"), buildDemoHtml(), "utf8");
 console.log("✔ demo.html (sample report)");
 
+// 2a) Render smoke test ---------------------------------------
+// Guards against the class of bug where the report silently leaks broken
+// tokens into the page (e.g. undefined CSS vars or unrendered values).
+const demoHtml = fs.readFileSync(path.join(dist, "demo.html"), "utf8");
+// The inlined Tailwind CSS legitimately uses --tw-* vars, so check the page
+// BODY only (CSS stripped) for leftovers.
+const bodyHtml = demoHtml.replace(/<style>[\s\S]*?<\/style>/, "");
+const leaks = bodyHtml.match(/undefined|NaN|var\(--/g);
+const markers = [
+  'role="img"', // accessible day bars
+  "bg-lime", // profit bars
+  "bg-rose", // loss bars
+  "border-l-lime", // stamped status chips
+  "tabular-nums", // aligned figures
+];
+const missing = markers.filter((m) => !bodyHtml.includes(m));
+if (leaks || missing.length) {
+  if (leaks) console.error("✘ render smoke test: leaks " + JSON.stringify(leaks));
+  if (missing.length)
+    console.error("✘ render smoke test: missing " + missing.join(", "));
+  process.exitCode = 1;
+} else {
+  console.log("✔ render smoke test: no leaks, key elements present");
+}
+
 // 3) Core verification against the CLI dataset --------------------
 const betsPath = path.join(root, "..", "bets_raw.json");
 if (fs.existsSync(betsPath)) {

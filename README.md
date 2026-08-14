@@ -51,6 +51,8 @@ npm run build:web      # bundles + minifies bookmarklets, generates pages into w
 npm run typecheck:web  # tsc --noEmit
 ```
 
+> **Bookmarklet size:** the self-contained bookmarklets bundle the full runtime (~40 KB minified), which can exceed Safari's bookmarklet limit (~32 KB) — the build warns if so. The **auto-updating loader** bookmarklet (available when `BOOKMARKLET_HOST` is set) sidesteps this: it's tiny and loads the latest runtime from the host, so it also auto-updates without re-dragging.
+
 Build output (`web/dist/`) — host this folder on any static host:
 
 - `index.html` — install page with the **"⚡ Analyze My Bets"** button to drag into the bookmarks bar (pick your bookmaker with the **football.com / SportyBet** tabs)

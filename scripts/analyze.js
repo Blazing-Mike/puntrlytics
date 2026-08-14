@@ -106,6 +106,48 @@ function generateSampleData() {
   );
 }
 
+// Export bets_raw.json to a CSV you can open in a spreadsheet.
+// Columns cover the CLI's fields plus the web-only breakdown dimensions
+// (betType/sport/tournament) when the scraper captured them.
+function exportCsv() {
+  if (!fs.existsSync(DATA_FILE)) {
+    console.log(
+      coloredText(
+        '\n⚠ "bets_raw.json" not found — nothing to export.',
+        "yellow",
+      ),
+    );
+    return false;
+  }
+  let bets;
+  try {
+    bets = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+  } catch (err) {
+    console.error(coloredText("❌ Error reading bets_raw.json:", "red", true));
+    console.error(err.message);
+    return false;
+  }
+  if (!Array.isArray(bets) || bets.length === 0) {
+    console.log(coloredText("⚠ No bets to export.", "yellow"));
+    return false;
+  }
+  const cols = ["betId", "date", "stake", "payout", "odds", "status", "betType", "sport", "tournament"];
+  const csvCell = (v) => {
+    const s = v === undefined || v === null ? "" : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const lines = [
+    cols.join(","),
+    ...bets.map((b) => cols.map((c) => csvCell(b[c])).join(",")),
+  ];
+  const out = path.join(process.cwd(), "bets.csv");
+  fs.writeFileSync(out, lines.join("\n") + "\n", "utf8");
+  console.log(
+    coloredText(`✔ Exported ${bets.length} bet(s) to ${out}`, "green"),
+  );
+  return true;
+}
+
 function runAnalysis() {
   if (!fs.existsSync(DATA_FILE)) {
     console.log(
@@ -367,7 +409,7 @@ function runAnalysis() {
       "  -------------------------------------------------------------",
     );
     console.log(
-      "\n💡 Tip: You can open and visualize `bets_raw.json` with spreadsheet software by converting it to CSV, or run more specific filters.",
+      "\n💡 Tip: Run `node scripts/analyze.js --csv` to export bets_raw.json to a CSV you can open in any spreadsheet, or `node scripts/analyze.js --generate` to create mock data.",
     );
     console.log(
       "=================================================================\n",
@@ -383,6 +425,9 @@ function runAnalysis() {
 // Check for script flags
 if (process.argv.includes("--generate")) {
   generateSampleData();
+}
+if (process.argv.includes("--csv")) {
+  exportCsv();
 }
 
 runAnalysis();

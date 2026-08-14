@@ -52,14 +52,14 @@ export function runBookmarklet(provider: Provider): void {
       "top:16px",
       "right:16px",
       "z-index:2147483647",
-      "background:#0f1420",
-      "color:#e5e7eb",
+      "background:#202938",
+      "color:#f2eee4",
       "font:13px/1.5 system-ui,sans-serif",
       "padding:14px 18px",
       "border-radius:10px",
       "box-shadow:0 8px 30px rgba(0,0,0,.35)",
       "max-width:320px",
-      "border:1px solid #1f2937",
+      "border:1px solid #374153",
     ].join(";"),
   );
   // Provider label right in the toast so you always know which site's data
@@ -73,7 +73,7 @@ export function runBookmarklet(provider: Provider): void {
       .replace(/"/g, "&quot;");
 
   overlay.innerHTML =
-    '<div style="font-weight:700;margin-bottom:4px;color:#10b981">⚡ Bet Analyzer — ' +
+    '<div style="font-weight:700;margin-bottom:4px;color:#41d484">⚡ Bet Analyzer — ' +
     esc(provider.name) +
     ' <span style="font-weight:400;opacity:.7">v' +
     BA_VERSION +

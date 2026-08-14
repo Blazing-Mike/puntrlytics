@@ -27,6 +27,9 @@ export interface OddsBucket {
   profit: number;
   won: number;
   total: number;
+  /** Settled (Won/Lost) bets only — win rate and ROI are computed from these. */
+  settled: number;
+  settledStake: number;
   winPct: number;
   roi: number;
 }
@@ -261,7 +264,10 @@ export function fmtMoney(n: number, currency: string, signed = false): string {
 }
 
 // --- report computation --------------------------------------
-// Mirrors the math in the CLI analyzer (analyze.js) exactly.
+// Shares the metrics math with the CLI analyzer (analyze.js) — the build
+// verifies the common figures against bets_raw.json. The web adds extra
+// breakdown dimensions (bet type, sport, tournament, stake size) on top,
+// fed by fields the CLI's scraper doesn't capture.
 
 export function computeReport(bets: Bet[]): Report {
   let totalStakes = 0;
@@ -285,6 +291,8 @@ export function computeReport(bets: Bet[]): Report {
       profit: 0,
       won: 0,
       total: 0,
+      settled: 0,
+      settledStake: 0,
       winPct: 0,
       roi: 0,
     },
@@ -295,6 +303,8 @@ export function computeReport(bets: Bet[]): Report {
       profit: 0,
       won: 0,
       total: 0,
+      settled: 0,
+      settledStake: 0,
       winPct: 0,
       roi: 0,
     },
@@ -305,6 +315,8 @@ export function computeReport(bets: Bet[]): Report {
       profit: 0,
       won: 0,
       total: 0,
+      settled: 0,
+      settledStake: 0,
       winPct: 0,
       roi: 0,
     },
@@ -315,6 +327,8 @@ export function computeReport(bets: Bet[]): Report {
       profit: 0,
       won: 0,
       total: 0,
+      settled: 0,
+      settledStake: 0,
       winPct: 0,
       roi: 0,
     },
@@ -388,6 +402,10 @@ export function computeReport(bets: Bet[]): Report {
     d.stake += stake;
     d.profit += profit;
     if (status === "Won") d.won++;
+    if (status === "Won" || status === "Lost") {
+      d.settled++;
+      d.settledStake += stake;
+    }
 
     // Day bucket — normalize every key to YYYY-MM-DD so mixed formats
     // (ISO vs d/m/Y) group to the same day and sort chronologically.
@@ -504,8 +522,8 @@ export function computeReport(bets: Bet[]): Report {
   const roi = settledStakes > 0 ? (settledNetProfit / settledStakes) * 100 : 0;
 
   for (const d of odds) {
-    d.winPct = d.total > 0 ? (d.won / d.total) * 100 : 0;
-    d.roi = d.stake > 0 ? (d.profit / d.stake) * 100 : 0;
+    d.winPct = d.settled > 0 ? (d.won / d.settled) * 100 : 0;
+    d.roi = d.settledStake > 0 ? (d.profit / d.settledStake) * 100 : 0;
   }
 
   const days = Object.keys(timeline)

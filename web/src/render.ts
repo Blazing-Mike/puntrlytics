@@ -168,6 +168,15 @@ export function renderReport(report: Report, opts: RenderOptions): string {
       // Zero-anchored bar: half-width on each side of the centre line.
       const barW = Math.max(1, (Math.abs(d.profit) / maxAbs) * 50);
       const pCol = d.profit > 0 ? "green" : d.profit < 0 ? "red" : "";
+      // Accessible description of the bar (visible text is elsewhere on the row).
+      const barLabel =
+        d.date +
+        ": " +
+        fmtMoney(d.profit, cur, true) +
+        " across " +
+        d.total +
+        " bet" +
+        (d.total === 1 ? "" : "s");
       const posBar =
         d.profit > 0
           ? `<i class="absolute top-0 bottom-0 rounded-sm bg-lime" style="left:50%;width:${barW.toFixed(1)}%"></i>`
@@ -176,14 +185,18 @@ export function renderReport(report: Report, opts: RenderOptions): string {
         d.profit < 0
           ? `<i class="absolute top-0 bottom-0 rounded-sm bg-rose" style="right:50%;width:${barW.toFixed(1)}%"></i>`
           : "";
+      // The tiny uppercase prefix shows only on phones, where the column
+      // header row is hidden — so each figure still has a label.
+      const mLabel = (t: string): string =>
+        `<span class="hidden max-[560px]:inline font-utility text-[9px] uppercase tracking-[1px] text-faint/70">${t}&nbsp;</span>`;
       return `<div class="grid grid-cols-[110px_56px_minmax(120px,1fr)_110px_64px] items-center gap-3 border-b border-faint/15 py-2.5 last:border-b-0 max-[560px]:grid-cols-[1fr_1fr_auto] max-[560px]:gap-x-2.5 max-[560px]:gap-y-1.5">
         <div class="text-[13px] font-extrabold">${esc(d.date)}</div>
-        <div class="whitespace-nowrap text-right text-xs text-faint tabular-nums max-[560px]:text-left">${d.total} bet${d.total === 1 ? "" : "s"}</div>
-        <div class="relative h-3 rounded border border-faint/20 bg-blacktop max-[560px]:col-span-full">
+        <div class="whitespace-nowrap text-right text-xs text-faint tabular-nums max-[560px]:text-left">${mLabel("Bets")}${d.total} bet${d.total === 1 ? "" : "s"}</div>
+        <div class="relative h-3 rounded border border-faint/20 bg-blacktop max-[560px]:col-span-full" role="img" aria-label="${esc(barLabel)}">
           <i class="absolute left-1/2 top-0 bottom-0 w-px bg-faint/40"></i>${posBar}${negBar}
         </div>
-        <div class="whitespace-nowrap text-right text-xs font-bold tabular-nums ${colorClass[pCol]}">${fmtMoney(d.profit, cur, true)}</div>
-        <div class="whitespace-nowrap text-right text-xs text-faint tabular-nums ${colorClass[pCol]}">${signed(d.roi)}</div>
+        <div class="whitespace-nowrap text-right text-xs font-bold tabular-nums ${colorClass[pCol]}">${mLabel("Net")}${fmtMoney(d.profit, cur, true)}</div>
+        <div class="whitespace-nowrap text-right text-xs text-faint tabular-nums ${colorClass[pCol]}">${mLabel("ROI")}${signed(d.roi)}</div>
       </div>`;
     })
     .join("");
@@ -304,7 +317,8 @@ export function renderReport(report: Report, opts: RenderOptions): string {
   ${tournamentSection}
   ${stakeSection}
   ${trendsBlock}`
-      : `<div class="${sectionCard}">No bets found to analyze.</div>`
+      : `<div class="${sectionCard}"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">No report yet</div>
+    <p class="text-[13.5px] leading-relaxed text-faint">No bets could be analyzed from this page. Make sure you're <b>logged in</b> and running the bookmarklet from your <b>Bet History</b> page, then run it again. Your data never leaves your browser.</p></div>`
   }
   ${historyBlock}
   <footer class="mx-auto mt-[30px] max-w-[680px] text-center">
