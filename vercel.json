@@ -1,0 +1,5 @@
+{
+  "installCommand": "npm --prefix web install",
+  "buildCommand": "npm run build:web",
+  "outputDirectory": "web/dist"
+}
