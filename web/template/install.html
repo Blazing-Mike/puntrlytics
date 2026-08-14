@@ -17,7 +17,7 @@
       <div class="mb-[18px] pb-4">
         <div class="mx-auto max-w-[680px] text-center">
           <p
-            class="mb-4 font-utility text-xs font-black uppercase tracking-[2.2px] text-gold"
+            class="mb-4 font-mono text-[11px] font-bold uppercase tracking-[2.2px] text-gold"
           >
             100% private · runs in your browser
           </p>
@@ -36,7 +36,7 @@
           </p>
           <a
             id="ba-bookmarklet"
-            class="group mt-8 inline-flex items-center justify-center gap-2.5 rounded-full bg-lime px-8 py-[14px] text-[17px] font-black leading-none text-[#07110c] no-underline shadow-[0_16px_38px_rgba(68,210,127,.25)] transition hover:-translate-y-0.5 hover:bg-[#54dd8e] hover:shadow-[0_22px_44px_rgba(68,210,127,.35)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan motion-reduce:transition-none max-[520px]:w-full"
+            class="group mt-8 inline-flex items-center justify-center gap-2.5 rounded-full bg-lime px-8 py-[14px] text-[17px] font-black leading-none text-blacktop no-underline shadow-[0_16px_38px_rgba(65,212,132,.25)] transition hover:-translate-y-0.5 hover:bg-[#54dd8e] hover:shadow-[0_22px_44px_rgba(65,212,132,.35)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan motion-reduce:transition-none max-[520px]:w-full"
             href="{{BOOKMARKLET_HREF}}"
             >Analyze my bets<span
               class="transition-transform group-hover:translate-x-1"
@@ -45,7 +45,7 @@
             ></a
           >
           <p
-            class="mt-3.5 font-utility text-[11px] font-bold uppercase tracking-[1.8px] text-faint"
+            class="mt-3.5 font-mono text-[11px] font-bold uppercase tracking-[1.8px] text-faint"
           >
             Drag the button to your bookmarks bar
           </p>
@@ -73,16 +73,18 @@
           aria-label="Sample report preview"
         >
           <div
-            class="flex items-center gap-2 border-b border-rule bg-ticket2/70 px-4 py-3"
+            class="flex items-center justify-between gap-2 border-b border-rule bg-ticket2/70 px-4 py-3"
           >
-            <span class="h-3 w-3 rounded-full bg-rose/80"></span>
-            <span class="h-3 w-3 rounded-full bg-gold/80"></span>
-            <span class="h-3 w-3 rounded-full bg-lime/80"></span>
             <span
-              class="ml-3 font-utility text-[11px] uppercase tracking-[1px] text-faint"
-              >demo report —
-              <span class="ba-provider-name">{{PROVIDER_NAME}}</span></span
+              class="font-mono text-[11px] uppercase tracking-[1px] text-faint"
+              >slip № <span class="ba-provider-name">{{PROVIDER_NAME}}</span>
+              — sample report</span
             >
+            <span class="flex items-center gap-2">
+              <span class="h-3 w-3 rounded-full bg-rose/80"></span>
+              <span class="h-3 w-3 rounded-full bg-gold/80"></span>
+              <span class="h-3 w-3 rounded-full bg-lime/80"></span>
+            </span>
           </div>
           <img
             class="block h-[560px] w-full object-cover object-top max-[820px]:h-[420px]"
@@ -201,7 +203,7 @@
         </details>
       </div>
 
-      <footer class="mt-[34px] text-center text-xs text-faint">
+      <footer class="mt-[34px] text-center font-mono text-[11px] uppercase tracking-[1.4px] text-faint">
         Bet Analyzer / open-source / works on Chrome, Edge and Firefox
       </footer>
     </div>

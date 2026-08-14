@@ -53,24 +53,24 @@ function breakdownSection(
       const pCol = b.profit > 0 ? "green" : b.profit < 0 ? "red" : "";
       return `<tr>
         <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-left">${esc(b.label)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right">${b.total}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right">${pct(b.winPct)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right">${fmtMoney(b.stake, cur)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right ${colorClass[pCol]}">${fmtMoney(b.profit, cur, true)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right ${colorClass[pCol]}">${signed(b.roi)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right tabular-nums">${b.total}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right tabular-nums">${pct(b.winPct)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right tabular-nums">${fmtMoney(b.stake, cur)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right tabular-nums ${colorClass[pCol]}">${fmtMoney(b.profit, cur, true)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right tabular-nums ${colorClass[pCol]}">${signed(b.roi)}</td>
       </tr>`;
     })
     .join("");
 
-  return `<div class="${sectionCard}"><h2 class="${sectionTitle}">${title}</h2>
+  return `<div class="${sectionCard}">${sectionHeader(title)}
     <div class="-m-1 overflow-x-auto"><table class="w-full min-w-[680px] border-collapse text-[13.5px]">
       <thead><tr>
-        <th class="border-b border-dashed border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">${esc(firstCol)}</th>
-        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Bets</th>
-        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th>
-        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Total staked</th>
-        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th>
-        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th>
+        <th class="border-b border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">${esc(firstCol)}</th>
+        <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Bets</th>
+        <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th>
+        <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Total staked</th>
+        <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th>
+        <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
@@ -83,14 +83,18 @@ const CSS = __BET_ANALYZER_CSS__;
 const page = "relative mx-auto max-w-[1040px]";
 const sectionCard =
   "mb-[18px] rounded-lg border border-rule bg-ticket/90 p-3.5 shadow-[0_18px_46px_rgba(0,0,0,.18)] sm:p-[18px]";
-const sectionTitle =
-  "mb-3.5 flex items-center gap-2.5 font-utility text-xs uppercase tracking-[1.5px] text-faint before:block before:w-8 before:border-t before:border-dashed before:border-gold";
+const sectionTitleBase =
+  "mb-3.5 font-utility text-xs uppercase tracking-[1.5px] text-faint";
+function sectionHeader(title: string): string {
+  return `<h2 class="${sectionTitleBase}">${title}</h2>`;
+}
 const kpiCard =
-  "min-h-[122px] overflow-hidden rounded-lg border border-b-[5px] border-rule bg-gradient-to-b from-ticket to-ticket2 p-3.5 transition motion-safe:hover:-translate-y-0.5";
+  "min-h-[122px] overflow-hidden rounded-lg border border-rule border-b-[5px] bg-gradient-to-b from-ticket to-ticket2 p-3.5 transition motion-safe:hover:-translate-y-0.5";
 const kpiLabel =
-  "mb-3 font-utility text-[11px] uppercase tracking-[1.3px] text-faint";
+  "mb-2.5 font-utility text-[11px] uppercase tracking-[1.3px] text-faint";
+const kpiField = "pt-2 tabular-nums";
 const kpiValue =
-  "break-words font-display text-[clamp(21px,3vw,32px)] font-black leading-none";
+  "break-words font-display text-[clamp(21px,3vw,32px)] font-black leading-none tabular-nums";
 const hint = "mt-1.5 text-[11px] text-faint";
 const colorClass: Record<string, string> = {
   green: "text-lime",
@@ -106,26 +110,36 @@ export function renderReport(report: Report, opts: RenderOptions): string {
   const genAt = opts.generatedAt || new Date().toLocaleString();
   const hasData = report.timeline.length > 0 || report.settledTotal > 0;
 
-  // --- KPI cards -------------------------------------------------
-  const kpis = `
-    <div class="${kpiCard} max-[860px]:first:col-span-2 max-[560px]:first:col-auto"><div class="${kpiLabel}">Total Stakes</div><div class="${kpiValue}">${fmtMoney(report.totalStakes, cur)}</div></div>
-    <div class="${kpiCard}"><div class="${kpiLabel}">Total Payouts</div><div class="${kpiValue}">${fmtMoney(report.totalPayouts, cur)}</div></div>
-    <div class="${kpiCard}"><div class="${kpiLabel}">Net Profit / Loss</div><div class="${kpiValue} ${report.netProfit >= 0 ? "text-lime" : "text-rose"}">${fmtMoney(report.netProfit, cur, true)}</div></div>
-    <div class="${kpiCard}"><div class="${kpiLabel}">ROI</div><div class="${kpiValue} ${report.roi >= 0 ? "text-lime" : "text-rose"}">${signed(report.roi, 2)}</div><div class="${hint}">settled bets only</div></div>
-    <div class="${kpiCard}"><div class="${kpiLabel}">Win Rate</div><div class="${kpiValue}">${report.winRate.toFixed(2)}%</div><div class="${hint}">${c.Won} won / ${report.settledTotal} settled</div></div>`;
+  // --- KPI cards (receipt-style fields) -------------------------
+  const kpi = (
+    label: string,
+    value: string,
+    valueCls = "",
+    extra = "",
+    cardCls = "",
+  ): string =>
+    `<div class="${kpiCard} ${cardCls}"><div class="${kpiLabel}">${label}</div>` +
+    `<div class="${kpiField}"><div class="${kpiValue} ${valueCls}">${value}</div>${extra}</div></div>`;
 
-  // --- status chips ----------------------------------------------
-  const chipDefs: Array<[string, string]> = [
-    ["Won", "green"],
-    ["Lost", "red"],
-    ["Void", ""],
-    ["Open", "blue"],
-    ["Unknown", "amber"],
+  const kpis = `
+    ${kpi("Total Stakes", fmtMoney(report.totalStakes, cur), "", "", "max-[860px]:col-span-2 max-[560px]:col-auto")}
+    ${kpi("Total Payouts", fmtMoney(report.totalPayouts, cur))}
+    ${kpi("Net Profit / Loss", fmtMoney(report.netProfit, cur, true), report.netProfit >= 0 ? "text-lime" : "text-rose")}
+    ${kpi("ROI", signed(report.roi, 2), report.roi >= 0 ? "text-lime" : "text-rose", `<div class="${hint}">settled bets only</div>`)}
+    ${kpi("Win Rate", report.winRate.toFixed(2) + "%", "", `<div class="${hint}">${c.Won} won / ${report.settledTotal} settled</div>`)}`;
+
+  // --- status chips (stamped tags with a coloured left edge) ----
+  const chipDefs: Array<[string, string, string]> = [
+    ["Won", "green", "border-l-lime"],
+    ["Lost", "red", "border-l-rose"],
+    ["Void", "", "border-l-rule"],
+    ["Open", "blue", "border-l-cyan"],
+    ["Unknown", "amber", "border-l-gold"],
   ];
   const chips = chipDefs
     .map(
-      ([label, cls]) =>
-        `<span class="whitespace-nowrap rounded-md border border-rule bg-blacktop px-3 py-2.5 text-center text-[13px] font-extrabold ${colorClass[cls]}">${label}: ${c[label] || 0}</span>`,
+      ([label, cls, edge]) =>
+        `<span class="whitespace-nowrap rounded-md border border-rule border-l-[3px] ${edge} bg-blacktop px-3 py-2.5 text-center text-[13px] font-extrabold tabular-nums ${colorClass[cls]}">${label}: ${c[label] || 0}</span>`,
     )
     .join("");
 
@@ -135,11 +149,11 @@ export function renderReport(report: Report, opts: RenderOptions): string {
       const pCol = d.profit >= 0 ? "green" : "red";
       return `<tr>
         <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-left">${esc(d.label)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right">${d.total}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right">${pct(d.winPct)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right">${fmtMoney(d.stake, cur)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right ${colorClass[pCol]}">${fmtMoney(d.profit, cur, true)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right ${colorClass[pCol]}">${signed(d.roi)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right tabular-nums">${d.total}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right tabular-nums">${pct(d.winPct)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right tabular-nums">${fmtMoney(d.stake, cur)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right tabular-nums ${colorClass[pCol]}">${fmtMoney(d.profit, cur, true)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-3 text-right tabular-nums ${colorClass[pCol]}">${signed(d.roi)}</td>
       </tr>`;
     })
     .join("");
@@ -156,26 +170,26 @@ export function renderReport(report: Report, opts: RenderOptions): string {
       const pCol = d.profit > 0 ? "green" : d.profit < 0 ? "red" : "";
       const posBar =
         d.profit > 0
-          ? `<i class="absolute top-0 bottom-0 rounded-sm bg-[var(--green)]" style="left:50%;width:${barW.toFixed(1)}%"></i>`
+          ? `<i class="absolute top-0 bottom-0 rounded-sm bg-lime" style="left:50%;width:${barW.toFixed(1)}%"></i>`
           : "";
       const negBar =
         d.profit < 0
-          ? `<i class="absolute top-0 bottom-0 rounded-sm bg-[var(--red)]" style="right:50%;width:${barW.toFixed(1)}%"></i>`
+          ? `<i class="absolute top-0 bottom-0 rounded-sm bg-rose" style="right:50%;width:${barW.toFixed(1)}%"></i>`
           : "";
       return `<div class="grid grid-cols-[110px_56px_minmax(120px,1fr)_110px_64px] items-center gap-3 border-b border-faint/15 py-2.5 last:border-b-0 max-[560px]:grid-cols-[1fr_1fr_auto] max-[560px]:gap-x-2.5 max-[560px]:gap-y-1.5">
         <div class="text-[13px] font-extrabold">${esc(d.date)}</div>
-        <div class="whitespace-nowrap text-right text-xs text-faint max-[560px]:text-left">${d.total} bet${d.total === 1 ? "" : "s"}</div>
+        <div class="whitespace-nowrap text-right text-xs text-faint tabular-nums max-[560px]:text-left">${d.total} bet${d.total === 1 ? "" : "s"}</div>
         <div class="relative h-3 rounded border border-faint/20 bg-blacktop max-[560px]:col-span-full">
           <i class="absolute left-1/2 top-0 bottom-0 w-px bg-faint/40"></i>${posBar}${negBar}
         </div>
-        <div class="whitespace-nowrap text-right text-xs font-bold ${colorClass[pCol]}">${fmtMoney(d.profit, cur, true)}</div>
-        <div class="whitespace-nowrap text-right text-xs text-faint ${colorClass[pCol]}">${signed(d.roi)}</div>
+        <div class="whitespace-nowrap text-right text-xs font-bold tabular-nums ${colorClass[pCol]}">${fmtMoney(d.profit, cur, true)}</div>
+        <div class="whitespace-nowrap text-right text-xs text-faint tabular-nums ${colorClass[pCol]}">${signed(d.roi)}</div>
       </div>`;
     })
     .join("");
 
   const trendsBlock = days.length
-    ? `<div class="${sectionCard}"><h2 class="${sectionTitle}">Daily trends - last ${days.length} active days</h2>
+    ? `<div class="${sectionCard}">${sectionHeader("Daily trends — last " + days.length + " active days")}
        <div class="mb-1 grid grid-cols-[110px_56px_minmax(120px,1fr)_110px_64px] gap-3 px-0 font-utility text-[10px] uppercase tracking-[1px] text-faint max-[560px]:hidden">
          <div>Date</div><div class="text-right">Bets</div><div class="text-center">Profit / loss</div><div class="text-right">Net</div><div class="text-right">ROI</div>
        </div>
@@ -190,23 +204,23 @@ export function renderReport(report: Report, opts: RenderOptions): string {
       const pCol = h.netProfit >= 0 ? "green" : "red";
       return `<tr>
         <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-left text-faint">${esc(h.savedAt)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right ${colorClass[pCol]}">${fmtMoney(h.netProfit, cur, true)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right ${colorClass[pCol]}">${signed(h.roi)}</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right">${h.winRate.toFixed(2)}%</td>
-        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right text-faint">${h.settledTotal}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right tabular-nums ${colorClass[pCol]}">${fmtMoney(h.netProfit, cur, true)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right tabular-nums ${colorClass[pCol]}">${signed(h.roi)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right tabular-nums">${h.winRate.toFixed(2)}%</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right tabular-nums text-faint">${h.settledTotal}</td>
       </tr>`;
     })
     .join("");
 
   const historyBlock = history.length
-    ? `<div class="${sectionCard}"><h2 class="${sectionTitle}">Saved snapshots (this browser)</h2>
+    ? `<div class="${sectionCard}">${sectionHeader("Saved snapshots (this browser)")}
        <div class="-m-1 overflow-x-auto"><table class="w-full min-w-[560px] border-collapse text-[13px]">
          <thead><tr>
-           <th class="border-b border-dashed border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Saved</th>
-           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th>
-           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th>
-           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th>
-           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Settled</th>
+           <th class="border-b border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Saved</th>
+           <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th>
+           <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th>
+           <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th>
+           <th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Settled</th>
          </tr></thead>
          <tbody>${historyRows}</tbody>
        </table></div>
@@ -221,8 +235,8 @@ export function renderReport(report: Report, opts: RenderOptions): string {
     ? ` · ${esc(report.biggestLoss.date)}`
     : "";
   const highlights = `
-    <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest win</div><div class="break-words font-display text-[26px] font-black text-lime">${fmtMoney(report.biggestWin.payout, cur)}</div><div class="${hint}">${winDate || "-"}</div></div>
-    <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest loss</div><div class="break-words font-display text-[26px] font-black text-rose">${fmtMoney(report.biggestLoss.stake, cur)}</div><div class="${hint}">${lossDate || "-"}</div></div>`;
+    <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest win</div><div class="break-words font-display text-[26px] font-black text-lime tabular-nums">${fmtMoney(report.biggestWin.payout, cur)}</div><div class="${hint}">${winDate || "-"}</div></div>
+    <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest loss</div><div class="break-words font-display text-[26px] font-black text-rose tabular-nums">${fmtMoney(report.biggestLoss.stake, cur)}</div><div class="${hint}">${lossDate || "-"}</div></div>`;
 
   // --- new breakdown sections (quick wins) -----------------------
   const betTypeSection = breakdownSection(
@@ -270,18 +284,18 @@ export function renderReport(report: Report, opts: RenderOptions): string {
 </head>
 <body class="px-[18px] pb-14 pt-7 max-[560px]:px-3 max-[560px]:pb-11 max-[560px]:pt-5">
 <div class="${page}">
-  <header class="mb-[22px] grid grid-cols-[minmax(0,1fr)_auto] items-end gap-[18px] pb-[18px] max-[860px]:grid-cols-1">
+  <header class="mb-[22px] grid grid-cols-[minmax(0,1fr)_auto] items-end gap-[18px] border-b border-rule pb-[16px] max-[860px]:grid-cols-1">
     <h1 class="font-display text-[clamp(34px,6vw,76px)] font-black uppercase leading-[.9]"><span class="text-gold">Bet</span> Analyzer</h1>
-    <span class="max-w-[360px] text-right font-utility text-xs uppercase tracking-[1.4px] text-faint max-[860px]:text-left">${esc(opts.providerName)} / ${report.totalBets} bet${report.totalBets === 1 ? "" : "s"}${period ? " / " + esc(period) : ""} / generated ${esc(genAt)} / processed locally</span>
+    <span class="max-w-[360px] text-right font-mono text-[11px] uppercase tracking-[1.1px] text-faint max-[860px]:text-left">№ ${esc(opts.providerName)} / ${report.totalBets} bet${report.totalBets === 1 ? "" : "s"}${period ? " / " + esc(period) : ""} / ${cur} / local</span>
   </header>
   ${
     hasData
       ? `<section class="mb-[18px] grid grid-cols-5 gap-2.5 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1">${kpis}</section>
-  <section class="${sectionCard}"><h2 class="${sectionTitle}">Highlights</h2><div class="grid grid-cols-2 gap-2.5 max-[560px]:grid-cols-1">${highlights}</div></section>
-  <section class="${sectionCard}"><h2 class="${sectionTitle}">Status breakdown</h2><div class="grid grid-cols-5 gap-2 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1">${chips}</div></section>
-  <section class="${sectionCard}"><h2 class="${sectionTitle}">Performance by odds range</h2>
+  <section class="${sectionCard}">${sectionHeader("Highlights")}<div class="grid grid-cols-2 gap-2.5 max-[560px]:grid-cols-1">${highlights}</div></section>
+  <section class="${sectionCard}">${sectionHeader("Status breakdown")}<div class="grid grid-cols-5 gap-2 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1">${chips}</div></section>
+  <section class="${sectionCard}">${sectionHeader("Performance by odds range")}
     <div class="-m-1 overflow-x-auto"><table class="w-full min-w-[680px] border-collapse text-[13.5px]">
-      <thead><tr><th class="border-b border-dashed border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Odds range</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Bets</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Total staked</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th><th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th></tr></thead>
+      <thead><tr><th class="border-b border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Odds range</th><th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Bets</th><th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th><th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Total staked</th><th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th><th class="border-b border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
   </section>
@@ -293,7 +307,10 @@ export function renderReport(report: Report, opts: RenderOptions): string {
       : `<div class="${sectionCard}">No bets found to analyze.</div>`
   }
   ${historyBlock}
-  <footer class="mx-auto mt-[30px] max-w-[680px] text-center text-xs text-faint">Processed entirely in your browser. A snapshot of each run is saved to this site's localStorage (on your device only) so you can revisit it after closing this tab.</footer>
+  <footer class="mx-auto mt-[30px] max-w-[680px] text-center">
+    <div class="font-mono text-[10px] uppercase tracking-[1px] text-faint/80">generated ${esc(genAt)} · processed entirely in your browser</div>
+    <p class="mt-1.5 text-xs text-faint">A snapshot of each run is saved to this site's localStorage (on your device only) so you can revisit it after closing this tab.</p>
+  </footer>
 </div>
 </body>
 </html>`;
