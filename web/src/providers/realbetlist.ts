@@ -168,6 +168,53 @@ export function normalizeOrder(raw: RawOrder): Bet {
     if (selOdds.length > 0) odds = selOdds.reduce((a, b) => a * b, 1);
   }
 
+  // Bet type + sport/tournament, derived from the selections. The API carries
+  // `orderType` (1 = single, 2 = multiple) and `selectionSize`, plus each
+  // selection's `categoryName` (sport) and `tournamentName` (league).
+  const rawSels = Array.isArray(raw.selections) ? raw.selections : [];
+  const selStr = (s: RawSelection | undefined, keys: string[]): string => {
+    if (!s) return "";
+    const rec = s as Record<string, unknown>;
+    for (const k of keys) {
+      const v = rec[k];
+      if (typeof v === "string" && v.trim()) return v;
+    }
+    return "";
+  };
+  const uniq = (arr: string[]): string[] => Array.from(new Set(arr));
+
+  const selectionSize =
+    toNum(pick(lower, ["selectionsize", "selectioncount", "selcount"])) ||
+    rawSels.length;
+  const orderType = toNum(pick(lower, ["ordertype"]));
+
+  let betType = "";
+  if (selectionSize > 1) betType = "Multiple";
+  else if (selectionSize === 1) betType = "Single";
+  else if (orderType === 1) betType = "Single";
+  else if (orderType > 1) betType = "Multiple";
+
+  const sports = rawSels
+    .map((s) => selStr(s, ["categoryname", "sportname", "sport"]))
+    .filter(Boolean);
+  const tournaments = rawSels
+    .map((s) => selStr(s, ["tournamentname", "leaguename", "league"]))
+    .filter(Boolean);
+  const uniqSports = uniq(sports);
+  const uniqTournaments = uniq(tournaments);
+  const sport =
+    uniqSports.length === 0
+      ? ""
+      : uniqSports.length === 1
+        ? uniqSports[0]
+        : "Mixed";
+  const tournament =
+    uniqTournaments.length === 0
+      ? ""
+      : uniqTournaments.length === 1
+        ? uniqTournaments[0]
+        : "Mixed";
+
   return {
     betId,
     date: parseDate(
@@ -186,6 +233,9 @@ export function normalizeOrder(raw: RawOrder): Bet {
     payout,
     odds,
     status: mapStatus(raw),
+    betType,
+    sport,
+    tournament,
   };
 }
 

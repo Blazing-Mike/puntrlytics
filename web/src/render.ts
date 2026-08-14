@@ -2,7 +2,7 @@
 // No external assets — everything (CSS + markup) is inlined so the
 // report can be written into a blank popup tab by the bookmarklet.
 
-import { fmtMoney, type Report } from "./core";
+import { fmtMoney, type BreakdownBucket, type Report } from "./core";
 
 export interface RenderOptions {
   providerName: string;
@@ -37,6 +37,44 @@ function pct(n: number): string {
 
 function signed(n: number, digits = 1): string {
   return (n >= 0 ? "+" : "") + n.toFixed(digits) + "%";
+}
+
+// Generic per-category performance table (bet type, sport, tournament, stake).
+function breakdownSection(
+  title: string,
+  firstCol: string,
+  buckets: BreakdownBucket[],
+  cur: string,
+): string {
+  const list = buckets.filter((b) => b.total > 0);
+  if (!list.length) return "";
+  const rows = list
+    .map((b) => {
+      const pCol = b.profit > 0 ? "green" : b.profit < 0 ? "red" : "";
+      return `<tr>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-left">${esc(b.label)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right">${b.total}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right">${pct(b.winPct)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right">${fmtMoney(b.stake, cur)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right ${colorClass[pCol]}">${fmtMoney(b.profit, cur, true)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2.5 text-right ${colorClass[pCol]}">${signed(b.roi)}</td>
+      </tr>`;
+    })
+    .join("");
+
+  return `<div class="${sectionCard}"><h2 class="${sectionTitle}">${title}</h2>
+    <div class="-m-1 overflow-x-auto"><table class="w-full min-w-[680px] border-collapse text-[13.5px]">
+      <thead><tr>
+        <th class="border-b border-dashed border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">${esc(firstCol)}</th>
+        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Bets</th>
+        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th>
+        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Total staked</th>
+        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th>
+        <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
 }
 
 declare const __BET_ANALYZER_CSS__: string;
@@ -186,6 +224,41 @@ export function renderReport(report: Report, opts: RenderOptions): string {
     <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest win</div><div class="break-words font-display text-[26px] font-black text-lime">${fmtMoney(report.biggestWin.payout, cur)}</div><div class="${hint}">${winDate || "-"}</div></div>
     <div class="rounded-lg border border-rule bg-blacktop p-3.5"><div class="mb-1.5 font-utility text-[11px] uppercase tracking-[1.2px] text-faint">Biggest loss</div><div class="break-words font-display text-[26px] font-black text-rose">${fmtMoney(report.biggestLoss.stake, cur)}</div><div class="${hint}">${lossDate || "-"}</div></div>`;
 
+  // --- new breakdown sections (quick wins) -----------------------
+  const betTypeSection = breakdownSection(
+    "Singles vs multiples",
+    "Type",
+    report.betTypes,
+    cur,
+  );
+  const sportSection = breakdownSection(
+    "Performance by sport",
+    "Sport",
+    report.bySport,
+    cur,
+  );
+  const tournamentSection = breakdownSection(
+    "Performance by tournament",
+    "Tournament",
+    report.byTournament,
+    cur,
+  );
+  const stakeSection = breakdownSection(
+    "Performance by stake size",
+    "Stake",
+    report.stakeBuckets,
+    cur,
+  );
+
+  // Report period (first → last bet date) for the header line.
+  const period =
+    report.period && report.period.first
+      ? report.period.first +
+        (report.period.last && report.period.last !== report.period.first
+          ? " → " + report.period.last
+          : "")
+      : "";
+
   // --- assemble --------------------------------------------------
   return `<!doctype html>
 <html lang="en">
@@ -199,7 +272,7 @@ export function renderReport(report: Report, opts: RenderOptions): string {
 <div class="${page}">
   <header class="mb-[22px] grid grid-cols-[minmax(0,1fr)_auto] items-end gap-[18px] pb-[18px] max-[860px]:grid-cols-1">
     <h1 class="font-display text-[clamp(34px,6vw,76px)] font-black uppercase leading-[.9]"><span class="text-gold">Bet</span> Analyzer</h1>
-    <span class="max-w-[360px] text-right font-utility text-xs uppercase tracking-[1.4px] text-faint max-[860px]:text-left">${esc(opts.providerName)} / generated ${esc(genAt)} / processed locally</span>
+    <span class="max-w-[360px] text-right font-utility text-xs uppercase tracking-[1.4px] text-faint max-[860px]:text-left">${esc(opts.providerName)} / ${report.totalBets} bet${report.totalBets === 1 ? "" : "s"}${period ? " / " + esc(period) : ""} / generated ${esc(genAt)} / processed locally</span>
   </header>
   ${
     hasData
@@ -212,6 +285,10 @@ export function renderReport(report: Report, opts: RenderOptions): string {
       <tbody>${rows}</tbody>
     </table></div>
   </section>
+  ${betTypeSection}
+  ${sportSection}
+  ${tournamentSection}
+  ${stakeSection}
   ${trendsBlock}`
       : `<div class="${sectionCard}">No bets found to analyze.</div>`
   }

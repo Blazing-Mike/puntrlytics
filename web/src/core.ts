@@ -3,7 +3,7 @@
 
 // Bump this whenever bookmarklet behavior changes so users can confirm they
 // reinstalled the latest build (it's printed to the console + toast).
-export const BA_VERSION = "2.2.0";
+export const BA_VERSION = "2.3.0";
 
 export interface Bet {
   betId: string;
@@ -12,6 +12,12 @@ export interface Bet {
   payout: number;
   odds: number;
   status: string;
+  /** "Single" | "Multiple" | "" (unknown) — derived from order/selection size. */
+  betType?: string;
+  /** Primary sport of the selections ("" unknown, "Mixed" if several). */
+  sport?: string;
+  /** Primary tournament/league of the selections ("" unknown, "Mixed"). */
+  tournament?: string;
 }
 
 export interface OddsBucket {
@@ -45,8 +51,22 @@ export interface BetHighlight {
   betId: string;
 }
 
+/** A generic per-category performance bucket (bet type, sport, stake, …). */
+export interface BreakdownBucket {
+  label: string;
+  total: number;
+  stake: number;
+  settledStake: number;
+  profit: number;
+  won: number;
+  settled: number;
+  winPct: number;
+  roi: number;
+}
+
 export interface Report {
   counts: Record<string, number>;
+  totalBets: number;
   totalStakes: number;
   totalPayouts: number;
   netProfit: number;
@@ -57,6 +77,16 @@ export interface Report {
   timeline: DaySummary[];
   biggestWin: BetHighlight;
   biggestLoss: BetHighlight;
+  /** "Single", "Multiple" and "Other" (unknown) performance. */
+  betTypes: BreakdownBucket[];
+  /** Performance by sport, sorted by stake desc. */
+  bySport: BreakdownBucket[];
+  /** Performance by tournament (top 10 by stake). */
+  byTournament: BreakdownBucket[];
+  /** Performance by stake-size range. */
+  stakeBuckets: BreakdownBucket[];
+  /** Date range covered (date-only keys, "" when unknown). */
+  period: { first: string; last: string };
 }
 
 export interface Provider {
@@ -176,12 +206,29 @@ export function toNum(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-// Parse dates: epoch millis/seconds, ISO strings, d/m/Y strings.
+// Parse dates: epoch millis/seconds, ISO strings, d/m/Y strings. Epoch values
+// are rendered in the user's LOCAL timezone (not UTC) so daily buckets and
+// the displayed times match the user's wall clock.
 export function parseDate(v: unknown): string {
   if (v === undefined || v === null || v === "") return "";
   if (typeof v === "number") {
     const ms = v > 1e12 ? v : v * 1000;
-    return new Date(ms).toISOString().replace("T", " ").substring(0, 19);
+    const d = new Date(ms);
+    if (Number.isNaN(d.getTime())) return "";
+    const p = (n: number): string => String(n).padStart(2, "0");
+    return (
+      d.getFullYear() +
+      "-" +
+      p(d.getMonth() + 1) +
+      "-" +
+      p(d.getDate()) +
+      " " +
+      p(d.getHours()) +
+      ":" +
+      p(d.getMinutes()) +
+      ":" +
+      p(d.getSeconds())
+    );
   }
   const s = String(v);
   const iso = s.match(/\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?/);
@@ -190,10 +237,7 @@ export function parseDate(v: unknown): string {
   if (slash) return slash[0];
   const num = Number(s);
   if (Number.isFinite(num) && num > 1e9) {
-    return new Date(num > 1e12 ? num : num * 1000)
-      .toISOString()
-      .replace("T", " ")
-      .substring(0, 19);
+    return parseDate(num);
   }
   return s;
 }
@@ -278,6 +322,41 @@ export function computeReport(bets: Bet[]): Report {
 
   const timeline: Record<string, DaySummary> = {};
 
+  // Breakdown buckets: bet type, sport, tournament, stake size.
+  const newBucket = (label: string): BreakdownBucket => ({
+    label,
+    total: 0,
+    stake: 0,
+    settledStake: 0,
+    profit: 0,
+    won: 0,
+    settled: 0,
+    winPct: 0,
+    roi: 0,
+  });
+  const betTypeMap: Record<string, BreakdownBucket> = {
+    Single: newBucket("Single"),
+    Multiple: newBucket("Multiple"),
+    Other: newBucket("Other"),
+  };
+  const sportMap: Record<string, BreakdownBucket> = {};
+  const tournamentMap: Record<string, BreakdownBucket> = {};
+
+  const STAKE_EDGES: Array<{ label: string; min?: number; max?: number }> = [
+    { label: "≤ 500", max: 500 },
+    { label: "501 – 1,000", min: 501, max: 1000 },
+    { label: "1,001 – 5,000", min: 1001, max: 5000 },
+    { label: "5,001 – 10,000", min: 5001, max: 10000 },
+    { label: "10,001 – 50,000", min: 10001, max: 50000 },
+    { label: "50,000+", min: 50001 },
+  ];
+  const stakeBuckets: BreakdownBucket[] = STAKE_EDGES.map((e) =>
+    newBucket(e.label),
+  );
+
+  let firstDate = "";
+  let lastDate = "";
+
   let biggestWin: BetHighlight = { payout: 0, stake: 0, date: "", betId: "" };
   let biggestLoss: BetHighlight = { payout: 0, stake: 0, date: "", betId: "" };
 
@@ -341,6 +420,65 @@ export function computeReport(bets: Bet[]): Report {
     if (status === "Won") t.won++;
     if (status === "Won" || status === "Lost") t.settledStake += stake;
 
+    // Bet-type bucket (Single / Multiple / Other)
+    const bt = betTypeMap[bet.betType || "Other"] || betTypeMap.Other;
+    bt.total++;
+    bt.stake += stake;
+    if (status === "Won") bt.won++;
+    if (status === "Won" || status === "Lost") {
+      bt.settled++;
+      bt.settledStake += stake;
+      bt.profit += profit;
+    }
+
+    // Sport / tournament buckets
+    const sportKey = bet.sport || "Unknown";
+    const sp = (sportMap[sportKey] ||= newBucket(sportKey));
+    sp.total++;
+    sp.stake += stake;
+    if (status === "Won") sp.won++;
+    if (status === "Won" || status === "Lost") {
+      sp.settled++;
+      sp.settledStake += stake;
+      sp.profit += profit;
+    }
+
+    const tournamentKey = bet.tournament || "Unknown";
+    const tn = (tournamentMap[tournamentKey] ||= newBucket(tournamentKey));
+    tn.total++;
+    tn.stake += stake;
+    if (status === "Won") tn.won++;
+    if (status === "Won" || status === "Lost") {
+      tn.settled++;
+      tn.settledStake += stake;
+      tn.profit += profit;
+    }
+
+    // Stake-size bucket
+    const sb = stakeBuckets.find(
+      (_, i) =>
+        (STAKE_EDGES[i].min === undefined ||
+          stake >= (STAKE_EDGES[i].min as number)) &&
+        (STAKE_EDGES[i].max === undefined ||
+          stake <= (STAKE_EDGES[i].max as number)),
+    );
+    if (sb) {
+      sb.total++;
+      sb.stake += stake;
+      if (status === "Won") sb.won++;
+      if (status === "Won" || status === "Lost") {
+        sb.settled++;
+        sb.settledStake += stake;
+        sb.profit += profit;
+      }
+    }
+
+    // Report period (date-only key)
+    if (dateKey !== "Unknown Date") {
+      if (!firstDate || dateKey < firstDate) firstDate = dateKey;
+      if (!lastDate || dateKey > lastDate) lastDate = dateKey;
+    }
+
     // Highlights
     if (status === "Won" && payout > biggestWin.payout) {
       biggestWin = {
@@ -387,8 +525,34 @@ export function computeReport(bets: Bet[]): Report {
     d.roi = d.settledStake > 0 ? (d.profit / d.settledStake) * 100 : 0;
   }
 
+  // Finalize breakdown buckets: win rate + ROI from settled stake only.
+  const finalize = (b: BreakdownBucket): void => {
+    b.winPct = b.settled > 0 ? (b.won / b.settled) * 100 : 0;
+    b.roi = b.settledStake > 0 ? (b.profit / b.settledStake) * 100 : 0;
+  };
+  const betTypes = [
+    betTypeMap.Single,
+    betTypeMap.Multiple,
+    betTypeMap.Other,
+  ].filter((b) => b.total > 0);
+  betTypes.forEach(finalize);
+
+  const bySport = Object.values(sportMap).filter((b) => b.total > 0);
+  bySport.forEach(finalize);
+  bySport.sort((a, b) => b.stake - a.stake);
+
+  const byTournament = Object.values(tournamentMap)
+    .filter((b) => b.total > 0)
+    .sort((a, b) => b.stake - a.stake)
+    .slice(0, 10);
+  byTournament.forEach(finalize);
+
+  const stakeBucketList = stakeBuckets.filter((b) => b.total > 0);
+  stakeBucketList.forEach(finalize);
+
   return {
     counts,
+    totalBets: bets.length,
     totalStakes,
     totalPayouts,
     netProfit,
@@ -399,5 +563,10 @@ export function computeReport(bets: Bet[]): Report {
     timeline: days,
     biggestWin,
     biggestLoss,
+    betTypes,
+    bySport,
+    byTournament,
+    stakeBuckets: stakeBucketList,
+    period: { first: firstDate, last: lastDate },
   };
 }
