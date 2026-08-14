@@ -175,9 +175,12 @@ export function normalizeOrder(raw: RawOrder): Bet {
   // `orderType` (1 = single, 2 = multiple) and `selectionSize`, plus each
   // selection's `categoryName` (sport) and `tournamentName` (league).
   const rawSels = Array.isArray(raw.selections) ? raw.selections : [];
+  // Selections come in camelCase (categoryName, tournamentName) — build a
+  // lowercase-keyed copy so one lookup handles camelCase and lower_case alike.
   const selStr = (s: RawSelection | undefined, keys: string[]): string => {
     if (!s) return "";
-    const rec = s as Record<string, unknown>;
+    const rec: Record<string, unknown> = {};
+    for (const k of Object.keys(s)) rec[k.toLowerCase()] = s[k];
     for (const k of keys) {
       const v = rec[k];
       if (typeof v === "string" && v.trim()) return v;
@@ -198,10 +201,20 @@ export function normalizeOrder(raw: RawOrder): Bet {
   else if (orderType > 1) betType = "Multiple";
 
   const sports = rawSels
-    .map((s) => selStr(s, ["categoryname", "sportname", "sport"]))
+    .map((s) =>
+      selStr(s, ["categoryname", "sportname", "sport", "category"]),
+    )
     .filter(Boolean);
   const tournaments = rawSels
-    .map((s) => selStr(s, ["tournamentname", "leaguename", "league"]))
+    .map((s) =>
+      selStr(s, [
+        "tournamentname",
+        "leaguename",
+        "league",
+        "competitionname",
+        "competition",
+      ]),
+    )
     .filter(Boolean);
   const uniqSports = uniq(sports);
   const uniqTournaments = uniq(tournaments);

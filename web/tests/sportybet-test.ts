@@ -50,6 +50,15 @@ check(
   round(1.42 * 1.21 * 1.38 * 1.09 * 1.17),
 );
 
+// Sport / tournament come from the selections' camelCase categoryName and
+// tournamentName fields — guard the case-insensitive lookup.
+check("bet1 sport", bets[0].sport, "Football");
+check("bet1 tournament", bets[0].tournament, "World Cup");
+check("bet2 sport", bets[1].sport, "Basketball");
+check("bet2 tournament", bets[1].tournament, "NBA");
+check("bet3 sport (mixed)", bets[2].sport, "Mixed");
+check("bet3 tournament (mixed)", bets[2].tournament, "Mixed");
+
 console.log("Normalized bets:");
 for (const b of bets)
   console.log(
