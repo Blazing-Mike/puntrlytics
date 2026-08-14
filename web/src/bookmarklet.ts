@@ -5,6 +5,11 @@
 import { BA_VERSION, computeReport, type Provider } from "./core";
 import { renderReport, type SavedRunInfo } from "./render";
 
+// Public host (injected at build time). When set, the bookmarklet opens the
+// hosted /dashboard page with the report in the URL fragment, so the data is
+// persisted on our own domain and survives closing the bookmaker's page.
+declare const __BET_ANALYZER_HOST__: string;
+
 // Snapshots are persisted to the bookmaker's own origin (localStorage) so the
 // report data survives closing the popup tab. Keyed per provider.
 const storageKey = (providerId: string): string =>
@@ -104,8 +109,33 @@ export function runBookmarklet(provider: Provider): void {
       msg("Analyzing " + bets.length + " bets…");
       const report = computeReport(bets);
 
-      // Show previously saved snapshots (persisted on this site) and save the
-      // current run so the data remains available after closing the tab.
+      // Hosted dashboard: hand the report to /dashboard on our own domain
+      // (same browser), which persists it to ITS localStorage. That makes the
+      // data accessible at https://<host>/dashboard even after closing this
+      // page — cross-origin localStorage can't be shared directly.
+      if (__BET_ANALYZER_HOST__) {
+        const payload = {
+          providerName: provider.name,
+          currency: provider.currency,
+          savedAt: new Date().toISOString(),
+          report,
+        };
+        const target =
+          __BET_ANALYZER_HOST__ +
+          "/dashboard.html#" +
+          encodeURIComponent(JSON.stringify(payload));
+        const w = window.open(target, "_blank");
+        if (!w) {
+          throw new Error(
+            "Popup blocked — please allow popups for this site and try again.",
+          );
+        }
+        cleanup();
+        return;
+      }
+
+      // Fallback (no host configured): self-contained blank tab + snapshots
+      // stored on the bookmaker's own origin.
       const history = loadHistory(provider.id);
       const html = renderReport(report, {
         providerName: provider.name,
