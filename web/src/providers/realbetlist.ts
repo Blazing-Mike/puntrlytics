@@ -7,7 +7,14 @@
 // `Accept: application/json` — the server then replies with JSON instead of
 // the XML you get when opening the URL in a browser address bar.
 
-import { fetchJson, parseDate, pick, toNum, type Bet, type Provider } from "../core";
+import {
+  fetchJson,
+  parseDate,
+  pick,
+  toNum,
+  type Bet,
+  type Provider,
+} from "../core";
 
 export interface RealBetListProviderOptions {
   id: string;
@@ -45,16 +52,32 @@ function mapStatus(raw: RawOrder): string {
   for (const k of Object.keys(raw)) lower[k.toLowerCase()] = raw[k];
 
   const winFlag =
-    lower.iswin !== undefined ? lower.iswin
-      : lower.iswinloss !== undefined ? lower.iswinloss
-      : lower.iswinflag;
+    lower.iswin !== undefined
+      ? lower.iswin
+      : lower.iswinloss !== undefined
+        ? lower.iswinloss
+        : lower.iswinflag;
   if (typeof winFlag === "boolean") return winFlag ? "Won" : "Lost";
-  if (winFlag === 1 || winFlag === "1" || winFlag === "Y" || winFlag === "true") return "Won";
-  if (winFlag === 0 || winFlag === "0" || winFlag === "N" || winFlag === "false") return "Lost";
+  if (winFlag === 1 || winFlag === "1" || winFlag === "Y" || winFlag === "true")
+    return "Won";
+  if (
+    winFlag === 0 ||
+    winFlag === "0" ||
+    winFlag === "N" ||
+    winFlag === "false"
+  )
+    return "Lost";
 
   const status = pick(lower, [
-    "winningstatus", "status", "orderstatus", "betstatus", "state",
-    "winloss", "result", "statusname", "statustext",
+    "winningstatus",
+    "status",
+    "orderstatus",
+    "betstatus",
+    "state",
+    "winloss",
+    "result",
+    "statusname",
+    "statustext",
   ]);
   if (typeof status === "string") {
     const s = status.toLowerCase();
@@ -86,29 +109,57 @@ export function normalizeOrder(raw: RawOrder): Bet {
 
   const betId = String(
     pick(lower, [
-      "orderno", "orderid", "betno", "ticketno", "ticketid", "betid",
-      "id", "refno", "serialno",
+      "orderno",
+      "orderid",
+      "betno",
+      "ticketno",
+      "ticketid",
+      "betid",
+      "id",
+      "refno",
+      "serialno",
     ]) ?? "",
   );
 
   const stake = toNum(
     pick(lower, [
-      "stakeamount", "stake", "betamount", "amount", "stakemoney",
-      "wager", "totalstake", "money",
+      "stakeamount",
+      "stake",
+      "betamount",
+      "amount",
+      "stakemoney",
+      "wager",
+      "totalstake",
+      "money",
     ]),
   );
 
   const payout = toNum(
     pick(lower, [
-      "returnamount", "winamount", "payout", "return", "winmoney",
-      "profitamount", "earnamount", "winning", "totalwinnings",
+      "returnamount",
+      "winamount",
+      "payout",
+      "return",
+      "winmoney",
+      "profitamount",
+      "earnamount",
+      "winning",
+      "totalwinnings",
     ]),
   );
 
   // No order-level odds field — the total odds of an accumulator is the
   // product of its selections' odds.
   let odds = toNum(
-    pick(lower, ["totalodds", "odds", "odd", "rate", "multiple", "bonus", "oddsvalue"]),
+    pick(lower, [
+      "totalodds",
+      "odds",
+      "odd",
+      "rate",
+      "multiple",
+      "bonus",
+      "oddsvalue",
+    ]),
   );
   if (!odds && Array.isArray(raw.selections) && raw.selections.length > 0) {
     const selOdds = raw.selections
@@ -121,8 +172,14 @@ export function normalizeOrder(raw: RawOrder): Bet {
     betId,
     date: parseDate(
       pick(lower, [
-        "createtime", "createdate", "bettime", "ordertime", "createdtime",
-        "addtime", "settletime", "date",
+        "createtime",
+        "createdate",
+        "bettime",
+        "ordertime",
+        "createdtime",
+        "addtime",
+        "settletime",
+        "date",
       ]),
     ),
     stake,
@@ -132,7 +189,9 @@ export function normalizeOrder(raw: RawOrder): Bet {
   };
 }
 
-export function createRealBetListProvider(opts: RealBetListProviderOptions): Provider {
+export function createRealBetListProvider(
+  opts: RealBetListProviderOptions,
+): Provider {
   const baseParams = opts.baseParams || DEFAULT_BASE_PARAMS;
 
   async function fetchBets(progress?: (msg: string) => void): Promise<Bet[]> {
@@ -142,13 +201,20 @@ export function createRealBetListProvider(opts: RealBetListProviderOptions): Pro
     let pageNo = 1;
 
     for (;;) {
-      const params: Record<string, string | number> = { ...baseParams, pageNo, pageSize: PAGE_SIZE };
+      const params: Record<string, string | number> = {
+        ...baseParams,
+        pageNo,
+        pageSize: PAGE_SIZE,
+      };
       if (opts.cacheBuster) params[opts.cacheBuster] = Date.now();
 
       const json = await fetchJson(opts.apiBase, params);
-      const data = (json as { data?: { entityList?: RawOrder[]; totalNum?: number } }).data;
+      const data = (
+        json as { data?: { entityList?: RawOrder[]; totalNum?: number } }
+      ).data;
       const list = (data && data.entityList) || [];
-      if (total === null && data && typeof data.totalNum === "number") total = data.totalNum;
+      if (total === null && data && typeof data.totalNum === "number")
+        total = data.totalNum;
 
       let added = 0;
       for (const item of list) {
@@ -160,7 +226,8 @@ export function createRealBetListProvider(opts: RealBetListProviderOptions): Pro
         }
       }
 
-      if (progress) progress(`Fetched ${bets.length}${total ? " of ~" + total : ""} bets…`);
+      if (progress)
+        progress(`Fetched ${bets.length}${total ? " of ~" + total : ""} bets…`);
 
       // Stop when the server returns nothing new, we have everything, or
       // the safety limit is reached (a page returning 0 new records means

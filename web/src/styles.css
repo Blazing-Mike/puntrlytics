@@ -34,10 +34,18 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    opacity: .18;
+    opacity: 0.18;
     background:
-      repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, .06) 22px 23px),
-      repeating-linear-gradient(0deg, transparent 0 17px, rgba(255, 255, 255, .04) 17px 18px);
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 22px,
+        rgba(255, 255, 255, 0.06) 22px 23px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 17px,
+        rgba(255, 255, 255, 0.04) 17px 18px
+      );
   }
 
   /* Bookmaker switcher tabs on the install page */
@@ -47,11 +55,17 @@
     color: #aab0bc;
     border-radius: 9999px;
     padding: 6px 14px;
-    font: 800 11px/1 "Arial Narrow", "Segoe UI", sans-serif;
+    font:
+      800 11px/1 "Arial Narrow",
+      "Segoe UI",
+      sans-serif;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
-    transition: background .15s ease, border-color .15s ease, color .15s ease;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
   }
   .ba-provider-tab:hover {
     color: #f5f1e8;

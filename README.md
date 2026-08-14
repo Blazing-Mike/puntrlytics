@@ -6,12 +6,12 @@ Works with **football.com** and **SportyBet** today; more bookmakers (Betano, �
 
 There are **two ways to use it**:
 
-| | CLI (`scripts/`) | Web bookmarklet (`web/`) |
-|---|---|---|
-| Who it's for | You, on your machine | Anyone — including non-technical people |
-| How | Paste a scraper into the browser console, run `npm start` | Drag a bookmark once, click it on the bet history page |
-| Setup | ~2 minutes | One-time drag-to-bookmarks |
-| Data leaves the device? | No | No |
+|                         | CLI (`scripts/`)                                          | Web bookmarklet (`web/`)                               |
+| ----------------------- | --------------------------------------------------------- | ------------------------------------------------------ |
+| Who it's for            | You, on your machine                                      | Anyone — including non-technical people                |
+| How                     | Paste a scraper into the browser console, run `npm start` | Drag a bookmark once, click it on the bet history page |
+| Setup                   | ~2 minutes                                                | One-time drag-to-bookmarks                             |
+| Data leaves the device? | No                                                        | No                                                     |
 
 ---
 
