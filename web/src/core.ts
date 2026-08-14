@@ -3,7 +3,7 @@
 
 // Bump this whenever bookmarklet behavior changes so users can confirm they
 // reinstalled the latest build (it's printed to the console + toast).
-export const BA_VERSION = "2.1.0";
+export const BA_VERSION = "2.2.0";
 
 export interface Bet {
   betId: string;
@@ -100,6 +100,31 @@ export function normalizeApiUrl(baseUrl: string, origin?: string): string {
   return parsed.href;
 }
 
+// The bookmaker's page patches `window.fetch` (it adds its own cache-buster
+// and rewrites request URLs). If we call that patched fetch with our absolute
+// URL, the URL gets mangled — path doubled + a second `_t` — and returns 404.
+// Recover the browser's NATIVE fetch from a fresh same-origin iframe so our
+// requests go through untouched.
+let cleanFetch: typeof fetch | null = null;
+
+function getCleanFetch(): typeof fetch {
+  if (cleanFetch) return cleanFetch;
+  try {
+    const iframe = document.createElement("iframe");
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.cssText = "display:none;width:0;height:0;border:0;";
+    document.body.appendChild(iframe);
+    const win = iframe.contentWindow as Window | null;
+    if (win && typeof win.fetch === "function") {
+      cleanFetch = win.fetch.bind(win);
+    }
+  } catch {
+    /* fall through to window.fetch */
+  }
+  if (!cleanFetch) cleanFetch = window.fetch.bind(window);
+  return cleanFetch;
+}
+
 // Fetch JSON from the same origin (uses the logged-in session cookies).
 export function fetchJson(
   baseUrl: string,
@@ -115,7 +140,7 @@ export function fetchJson(
   // Always log the exact URL we're about to request — makes it easy to spot a
   // stale bookmarklet (doubled path / double `_t`) in the console.
   console.log("[Bet Analyzer] GET " + url.href);
-  return fetch(
+  return getCleanFetch()(
     url,
     Object.assign(
       {
