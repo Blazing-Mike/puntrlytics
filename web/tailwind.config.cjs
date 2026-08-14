@@ -7,20 +7,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: "#f5f1e8",
-        ticket: "#1f2632",
-        ticket2: "#19202b",
-        rule: "#343c4b",
-        faint: "#aab0bc",
-        lime: "#44d27f",
-        rose: "#ff6378",
-        cyan: "#67d8ff",
+        ink: "#f2eee4",
+        ticket: "#202938",
+        ticket2: "#1a2230",
+        rule: "#374153",
+        faint: "#9aa4b6",
+        lime: "#41d484",
+        rose: "#ff7084",
+        cyan: "#5fd4ff",
         gold: "#f7b955",
-        blacktop: "#080a0f",
+        blacktop: "#07090e",
       },
       fontFamily: {
+        // Ledger serif — used with restraint for the big figures and headings.
         display: ['Georgia', '"Times New Roman"', "serif"],
+        // Tabular labels for eyebrows and column headers.
         utility: ['"Arial Narrow"', '"Segoe UI"', "sans-serif"],
+        // Ticket-print monospace for serials, field codes and receipt lines.
+        mono: ['"Courier New"', '"Courier"', "monospace"],
       },
       backgroundImage: {
         app:
