@@ -2,10 +2,16 @@
 // Fetches the user's bets, computes the report, and opens the
 // dashboard in a new blank tab (fully self-contained HTML).
 
-import { computeReport, type Provider } from "./core";
+import { BA_VERSION, computeReport, type Provider } from "./core";
 import { renderReport } from "./render";
 
 export function runBookmarklet(provider: Provider): void {
+  // Version marker — check the console: if this line is missing (or shows an
+  // older version), the browser is running a stale bookmarklet.
+  console.log(
+    "[Bet Analyzer] v" + BA_VERSION + " — " + provider.name + " (auto-detect)",
+  );
+
   // Floating progress toast on the site we're running against.
   const overlay = document.createElement("div");
   overlay.setAttribute(
@@ -38,7 +44,9 @@ export function runBookmarklet(provider: Provider): void {
   overlay.innerHTML =
     '<div style="font-weight:700;margin-bottom:4px;color:#10b981">⚡ Bet Analyzer — ' +
     esc(provider.name) +
-    "</div>" +
+    ' <span style="font-weight:400;opacity:.7">v' +
+    BA_VERSION +
+    "</span></div>" +
     '<div id="ba-msg" style="opacity:.85">Starting…</div>';
   document.body.appendChild(overlay);
 

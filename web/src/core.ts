@@ -1,6 +1,10 @@
 // Shared analysis core — single source of truth for the metrics math.
 // Used by the bookmarklet bundle (browser) and the build/demo pipeline (Node).
 
+// Bump this whenever bookmarklet behavior changes so users can confirm they
+// reinstalled the latest build (it's printed to the console + toast).
+export const BA_VERSION = "2.1.0";
+
 export interface Bet {
   betId: string;
   date: string;
@@ -108,6 +112,9 @@ export function fetchJson(
     if (v !== undefined && v !== null && v !== "")
       url.searchParams.set(k, String(v));
   }
+  // Always log the exact URL we're about to request — makes it easy to spot a
+  // stale bookmarklet (doubled path / double `_t`) in the console.
+  console.log("[Bet Analyzer] GET " + url.href);
   return fetch(
     url,
     Object.assign(
