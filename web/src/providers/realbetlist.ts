@@ -43,7 +43,10 @@ const DEFAULT_BASE_PARAMS: Record<string, string> = {
   isHistory: "0",
 };
 
-const MAX_PAGES = 100;
+// Safety cap against infinite pagination. 2000 pages × up to 100 bets/page =
+// 200,000 bets — far beyond any real account, so this never truncates in
+// practice (a warning is logged if it's ever reached).
+const MAX_PAGES = 2000;
 const PAGE_SIZE = 100;
 
 // winningStatus codes: 20 = Won, 30 = Lost, 10 = Void, 40 = Open
@@ -269,8 +272,11 @@ export function createRealBetListProvider(
       let added = 0;
       for (const item of list) {
         const b = normalizeOrder(item);
-        if (!seen.has(b.betId)) {
-          seen.add(b.betId);
+        // Fallback key so bets whose ID couldn't be extracted never collapse
+        // into a single "empty ID" record and silently disappear.
+        const key = b.betId || "no-id:" + JSON.stringify(item);
+        if (!seen.has(key)) {
+          seen.add(key);
           bets.push(b);
           added++;
         }
@@ -279,18 +285,27 @@ export function createRealBetListProvider(
       if (progress)
         progress(`Fetched ${bets.length}${total ? " of ~" + total : ""} bets…`);
 
-      // Stop when the server returns nothing new, we have everything, or
-      // the safety limit is reached (a page returning 0 new records means
-      // pagination isn't advancing).
+      // Stop when the server returns nothing new or we have everything.
       if (
         list.length === 0 ||
         added === 0 ||
-        (total !== null && bets.length >= total) ||
-        pageNo >= MAX_PAGES
+        (total !== null && bets.length >= total)
       ) {
         break;
       }
+      // Safety cap against an infinite loop; generous enough that no real
+      // account should ever hit it (2000 × 100 = 200,000 bets).
+      if (pageNo >= MAX_PAGES) {
+        break;
+      }
       pageNo++;
+    }
+
+    if (total !== null && bets.length < total) {
+      console.warn(
+        `[Bet Analyzer] Pagination ended early: fetched ${bets.length} of ~${total} bets. ` +
+          "The server may cap pageSize or pagination may have stalled — see Network tab.",
+      );
     }
 
     return bets;
