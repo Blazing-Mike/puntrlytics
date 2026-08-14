@@ -86,6 +86,50 @@ for (const f of bookmarkletEntries) {
   );
 }
 
+// 1b) Auto-updating loader bookmarklet ------------------------------
+// The tiny "loader" is what users actually drag: it injects the latest
+// runtime script from this host, so future updates reach every user without
+// them ever re-dragging the bookmarklet again.
+const HOST = (() => {
+  const raw =
+    process.env.BOOKMARKLET_HOST ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
+    "";
+  if (!raw) return "";
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : "https://" + raw;
+  return withScheme.replace(/\/+$/, "");
+})();
+
+let loaderUrl = "";
+let loaderCode = "";
+if (HOST) {
+  fs.copyFileSync(
+    path.join(dist, "bookmarklet-auto.js"),
+    path.join(dist, "bookmarklet-runtime.js"),
+  );
+  loaderCode =
+    '(function(){var s=document.createElement("script");' +
+    's.src="' +
+    HOST +
+    '/bookmarklet-runtime.js?_="+Date.now();' +
+    's.onerror=function(){alert("[Bet Analyzer] Could not load the latest script. Check your connection.");};' +
+    "(document.body||document.documentElement).appendChild(s);})();";
+  loaderUrl = "javascript:" + encodeURIComponent(loaderCode);
+  fs.writeFileSync(
+    path.join(dist, "bookmarklet-loader.txt"),
+    loaderUrl,
+    "utf8",
+  );
+  console.log(
+    `✔ bookmarklet-runtime.js + auto-updating loader (host: ${HOST})`,
+  );
+} else {
+  console.log(
+    "ℹ set BOOKMARKLET_HOST (or Vercel deployment URL) to enable the auto-updating loader bookmarklet",
+  );
+}
+
 // 2) Demo + verify bundles (Node-importable ESM) -------------------
 const demoBundle = path.join(dist, ".demo-bundle.mjs");
 const verifyBundle = path.join(dist, ".verify-bundle.mjs");
@@ -166,40 +210,56 @@ const PROVIDER_TAB_NAMES = {
   sportybet: "SportyBet",
 };
 
-const primary =
-  bookmarklets.find((b) => b.id === "auto") ||
-  bookmarklets.find((b) => b.id === "football") ||
-  bookmarklets[0];
-
 // Options for the provider switcher on the install page (id, display name,
-// full bookmarklet URL, and the raw code for the "copy" box).
-const providerOptions = bookmarklets.map((b) => ({
-  id: b.id,
-  name: PROVIDER_NAMES[b.id] || b.id,
-  href: b.url,
-  code: b.code,
-}));
+// bookmarklet URL, and the raw code for the "copy" box). When the loader is
+// available it becomes the primary option — it auto-detects the site AND
+// always loads the latest build, so users never need to re-drag.
+const providerOptions = [];
+if (loaderUrl) {
+  providerOptions.push({
+    id: "auto",
+    name: PROVIDER_NAMES.auto,
+    href: loaderUrl,
+    code: loaderCode,
+  });
+}
+for (const b of bookmarklets) {
+  if (loaderUrl && b.id === "auto") continue; // loader replaces self-contained auto
+  providerOptions.push({
+    id: b.id,
+    name: PROVIDER_NAMES[b.id] || b.id,
+    href: b.url,
+    code: b.code,
+  });
+}
 
-// Render one pill tab per provider. The auto-detect tab is first and gets a
-// hint explaining it covers every site.
-const providerTabs = bookmarklets
-  .map((b, i) => {
-    const label = PROVIDER_TAB_NAMES[b.id] || PROVIDER_NAMES[b.id] || b.id;
-    const hint =
-      b.id === "auto"
-        ? ' title="One bookmarklet — picks SportyBet or football.com automatically"'
-        : "";
-    const badge =
-      b.id === "auto"
-        ? ' <span class="ba-provider-badge" aria-hidden="true">1 bookmark for all</span>'
-        : "";
-    return `<button type="button" class="ba-provider-tab" data-provider="${b.id}" aria-pressed="false"${hint}>${label}${badge}</button>`;
+const primary = providerOptions[0];
+
+// Render one pill tab per provider. The auto tab is first and its label/badge
+// change depending on whether it's the auto-updating loader or self-contained.
+const autoTabLabel = loaderUrl ? "Auto-update" : "Auto-detect";
+const autoBadge = loaderUrl ? "auto-updates" : "1 bookmark for all";
+const autoHint = loaderUrl
+  ? ' title="One bookmarklet — auto-detects SportyBet/football.com and always loads the latest build"'
+  : ' title="One bookmarklet — picks SportyBet or football.com automatically"';
+
+const providerTabs = providerOptions
+  .map((p) => {
+    const isAuto = p.id === "auto";
+    const label = isAuto
+      ? autoTabLabel
+      : PROVIDER_TAB_NAMES[p.id] || PROVIDER_NAMES[p.id] || p.id;
+    const hint = isAuto ? autoHint : "";
+    const badge = isAuto
+      ? ` <span class="ba-provider-badge" aria-hidden="true">${autoBadge}</span>`
+      : "";
+    return `<button type="button" class="ba-provider-tab" data-provider="${p.id}" aria-pressed="false"${hint}>${label}${badge}</button>`;
   })
   .join("");
 
 let html = tpl;
 if (primary) {
-  html = html.split("{{BOOKMARKLET_HREF}}").join(primary.url);
+  html = html.split("{{BOOKMARKLET_HREF}}").join(primary.href);
   html = html.split("{{BOOKMARKLET_CODE}}").join(escHtml(primary.code));
 } else {
   html = html.split("{{BOOKMARKLET_HREF}}").join("#");

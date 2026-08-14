@@ -32,6 +32,10 @@ export interface DaySummary {
   profit: number;
   won: number;
   total: number;
+  /** Stake of settled (Won/Lost) bets only — used for accurate per-day ROI. */
+  settledStake: number;
+  /** Net profit ÷ settled stake, so each day's ROI isn't skewed by open/void. */
+  roi: number;
 }
 
 export interface BetHighlight {
@@ -306,15 +310,28 @@ export function computeReport(bets: Bet[]): Report {
     d.profit += profit;
     if (status === "Won") d.won++;
 
-    // Day bucket
+    // Day bucket — normalize every key to YYYY-MM-DD so mixed formats
+    // (ISO vs d/m/Y) group to the same day and sort chronologically.
     const rawDate = bet.date || "";
-    const m =
-      rawDate.match(/^\d{4}-\d{2}-\d{2}/) ||
-      rawDate.match(/^\d{2}\/\d{2}\/\d{4}/);
-    const dateKey = m ? m[0] : "Unknown Date";
+    const iso = rawDate.match(/^\d{4}-\d{2}-\d{2}/);
+    const slash = rawDate.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    const dateKey = iso
+      ? iso[0]
+      : slash
+        ? `${slash[3]}-${slash[2]}-${slash[1]}`
+        : "Unknown Date";
     let t = timeline[dateKey];
     if (!t) {
-      t = { date: dateKey, stake: 0, payout: 0, profit: 0, won: 0, total: 0 };
+      t = {
+        date: dateKey,
+        stake: 0,
+        payout: 0,
+        profit: 0,
+        won: 0,
+        total: 0,
+        settledStake: 0,
+        roi: 0,
+      };
       timeline[dateKey] = t;
     }
     t.stake += stake;
@@ -322,6 +339,7 @@ export function computeReport(bets: Bet[]): Report {
     t.profit += profit;
     t.total++;
     if (status === "Won") t.won++;
+    if (status === "Won" || status === "Lost") t.settledStake += stake;
 
     // Highlights
     if (status === "Won" && payout > biggestWin.payout) {
@@ -355,11 +373,19 @@ export function computeReport(bets: Bet[]): Report {
   const days = Object.keys(timeline)
     .map((k) => timeline[k])
     .sort((a, b) => {
-      // Descending by date; "Unknown Date" sinks to the bottom.
+      // Chronological (oldest first); "Unknown Date" sinks to the bottom.
       const da = a.date === "Unknown Date" ? "" : a.date;
       const db = b.date === "Unknown Date" ? "" : b.date;
-      return da < db ? 1 : da > db ? -1 : 0;
+      if (da === "" && db === "") return 0;
+      if (da === "") return 1;
+      if (db === "") return -1;
+      return da < db ? -1 : da > db ? 1 : 0;
     });
+
+  // Per-day ROI uses settled stake only, so open/void bets don't distort it.
+  for (const d of days) {
+    d.roi = d.settledStake > 0 ? (d.profit / d.settledStake) * 100 : 0;
+  }
 
   return {
     counts,

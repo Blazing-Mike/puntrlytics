@@ -8,6 +8,19 @@ export interface RenderOptions {
   providerName: string;
   currency: string;
   generatedAt?: string;
+  /** Previously saved reports for the same provider (newest first). */
+  history?: SavedRunInfo[];
+}
+
+export interface SavedRunInfo {
+  providerName: string;
+  savedAt: string;
+  totalStakes: number;
+  totalPayouts: number;
+  netProfit: number;
+  roi: number;
+  winRate: number;
+  settledTotal: number;
 }
 
 function esc(s: string): string {
@@ -94,27 +107,72 @@ export function renderReport(report: Report, opts: RenderOptions): string {
     .join("");
 
   // --- daily trends ----------------------------------------------
-  const days = report.timeline.slice(0, 7);
+  // timeline is chronological (oldest → newest) from computeReport, so the
+  // last N entries are the most recent active days, shown left-to-right/old→new.
+  const days = report.timeline.slice(-7);
   const maxAbs = Math.max(1, ...days.map((d) => Math.abs(d.profit)));
   const dayRows = days
     .map((d) => {
-      const barW = Math.max(2, (Math.abs(d.profit) / maxAbs) * 100);
-      const barColor =
-        d.profit > 0 ? "var(--green)" : d.profit < 0 ? "var(--red)" : "#475569";
-      const pCol = d.profit >= 0 ? "green" : "red";
-      return `<div class="grid grid-cols-[116px_74px_minmax(120px,1fr)_128px] items-center gap-3 border-b border-faint/15 py-2.5 last:border-b-0 max-[560px]:grid-cols-[1fr_76px] max-[560px]:gap-x-2.5 max-[560px]:gap-y-1.5">
+      // Zero-anchored bar: half-width on each side of the centre line.
+      const barW = Math.max(1, (Math.abs(d.profit) / maxAbs) * 50);
+      const pCol = d.profit > 0 ? "green" : d.profit < 0 ? "red" : "";
+      const posBar =
+        d.profit > 0
+          ? `<i class="absolute top-0 bottom-0 rounded-sm bg-[var(--green)]" style="left:50%;width:${barW.toFixed(1)}%"></i>`
+          : "";
+      const negBar =
+        d.profit < 0
+          ? `<i class="absolute top-0 bottom-0 rounded-sm bg-[var(--red)]" style="right:50%;width:${barW.toFixed(1)}%"></i>`
+          : "";
+      return `<div class="grid grid-cols-[110px_56px_minmax(120px,1fr)_110px_64px] items-center gap-3 border-b border-faint/15 py-2.5 last:border-b-0 max-[560px]:grid-cols-[1fr_1fr_auto] max-[560px]:gap-x-2.5 max-[560px]:gap-y-1.5">
         <div class="text-[13px] font-extrabold">${esc(d.date)}</div>
         <div class="whitespace-nowrap text-right text-xs text-faint max-[560px]:text-left">${d.total} bet${d.total === 1 ? "" : "s"}</div>
-        <div class="h-3 overflow-hidden rounded border border-faint/20 bg-blacktop max-[560px]:col-span-full"><i class="block h-full rounded-sm" style="width:${barW.toFixed(1)}%;background:${barColor}"></i></div>
-        <div class="whitespace-nowrap text-right text-xs text-faint ${colorClass[pCol]} max-[560px]:col-start-2 max-[560px]:row-start-1">${fmtMoney(d.profit, cur, true)}</div>
+        <div class="relative h-3 rounded border border-faint/20 bg-blacktop max-[560px]:col-span-full">
+          <i class="absolute left-1/2 top-0 bottom-0 w-px bg-faint/40"></i>${posBar}${negBar}
+        </div>
+        <div class="whitespace-nowrap text-right text-xs font-bold ${colorClass[pCol]}">${fmtMoney(d.profit, cur, true)}</div>
+        <div class="whitespace-nowrap text-right text-xs text-faint ${colorClass[pCol]}">${signed(d.roi)}</div>
       </div>`;
     })
     .join("");
 
   const trendsBlock = days.length
     ? `<div class="${sectionCard}"><h2 class="${sectionTitle}">Daily trends - last ${days.length} active days</h2>
+       <div class="mb-1 grid grid-cols-[110px_56px_minmax(120px,1fr)_110px_64px] gap-3 px-0 font-utility text-[10px] uppercase tracking-[1px] text-faint max-[560px]:hidden">
+         <div>Date</div><div class="text-right">Bets</div><div class="text-center">Profit / loss</div><div class="text-right">Net</div><div class="text-right">ROI</div>
+       </div>
        ${dayRows}
-       <div class="${hint}">Bar width scales with the day's net profit.</div></div>`
+       <div class="${hint}">Green = profit (right of centre), red = loss (left). Bar length scales with the biggest day; ROI uses settled bets only.</div></div>`
+    : "";
+
+  // --- saved history (persisted on the bookmaker's domain) -------
+  const history = opts.history || [];
+  const historyRows = history
+    .map((h) => {
+      const pCol = h.netProfit >= 0 ? "green" : "red";
+      return `<tr>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-left text-faint">${esc(h.savedAt)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right ${colorClass[pCol]}">${fmtMoney(h.netProfit, cur, true)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right ${colorClass[pCol]}">${signed(h.roi)}</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right">${h.winRate.toFixed(2)}%</td>
+        <td class="whitespace-nowrap border-b border-faint/15 px-2.5 py-2 text-right text-faint">${h.settledTotal}</td>
+      </tr>`;
+    })
+    .join("");
+
+  const historyBlock = history.length
+    ? `<div class="${sectionCard}"><h2 class="${sectionTitle}">Saved snapshots (this browser)</h2>
+       <div class="-m-1 overflow-x-auto"><table class="w-full min-w-[560px] border-collapse text-[13px]">
+         <thead><tr>
+           <th class="border-b border-dashed border-rule px-2.5 py-2 text-left font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Saved</th>
+           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Net profit</th>
+           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">ROI</th>
+           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Win rate</th>
+           <th class="border-b border-dashed border-rule px-2.5 py-2 text-right font-utility text-[11px] uppercase tracking-[1.1px] text-faint">Settled</th>
+         </tr></thead>
+         <tbody>${historyRows}</tbody>
+       </table></div>
+       <div class="${hint}">Stored in this site's localStorage — it survives closing the page. Run the bookmarklet again to add a new snapshot.</div></div>`
     : "";
 
   // --- highlights ------------------------------------------------
@@ -157,7 +215,8 @@ export function renderReport(report: Report, opts: RenderOptions): string {
   ${trendsBlock}`
       : `<div class="${sectionCard}">No bets found to analyze.</div>`
   }
-  <footer class="mx-auto mt-[30px] max-w-[680px] text-center text-xs text-faint">Your bets were processed entirely in your browser and were never uploaded or stored anywhere.</footer>
+  ${historyBlock}
+  <footer class="mx-auto mt-[30px] max-w-[680px] text-center text-xs text-faint">Processed entirely in your browser. A snapshot of each run is saved to this site's localStorage (on your device only) so you can revisit it after closing this tab.</footer>
 </div>
 </body>
 </html>`;

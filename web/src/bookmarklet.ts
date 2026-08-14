@@ -3,7 +3,33 @@
 // dashboard in a new blank tab (fully self-contained HTML).
 
 import { BA_VERSION, computeReport, type Provider } from "./core";
-import { renderReport } from "./render";
+import { renderReport, type SavedRunInfo } from "./render";
+
+// Snapshots are persisted to the bookmaker's own origin (localStorage) so the
+// report data survives closing the popup tab. Keyed per provider.
+const storageKey = (providerId: string): string =>
+  "betAnalyzer:reports:" + providerId;
+const MAX_SNAPSHOTS = 20;
+
+function loadHistory(providerId: string): SavedRunInfo[] {
+  try {
+    const raw = localStorage.getItem(storageKey(providerId));
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSnapshot(providerId: string, snap: SavedRunInfo): void {
+  try {
+    const arr = [snap, ...loadHistory(providerId)].slice(0, MAX_SNAPSHOTS);
+    localStorage.setItem(storageKey(providerId), JSON.stringify(arr));
+  } catch {
+    /* storage full / blocked — non-fatal */
+  }
+}
 
 export function runBookmarklet(provider: Provider): void {
   // Version marker — check the console: if this line is missing (or shows an
@@ -77,9 +103,24 @@ export function runBookmarklet(provider: Provider): void {
       }
       msg("Analyzing " + bets.length + " bets…");
       const report = computeReport(bets);
+
+      // Show previously saved snapshots (persisted on this site) and save the
+      // current run so the data remains available after closing the tab.
+      const history = loadHistory(provider.id);
       const html = renderReport(report, {
         providerName: provider.name,
         currency: provider.currency,
+        history,
+      });
+      saveSnapshot(provider.id, {
+        providerName: provider.name,
+        savedAt: new Date().toLocaleString(),
+        totalStakes: report.totalStakes,
+        totalPayouts: report.totalPayouts,
+        netProfit: report.netProfit,
+        roi: report.roi,
+        winRate: report.winRate,
+        settledTotal: report.settledTotal,
       });
 
       const w = window.open("", "_blank");
