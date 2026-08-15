@@ -35,11 +35,18 @@ export function saveReport(rep: StoredReport): StoredReport[] {
   return list;
 }
 
+export function deleteReport(id: string): StoredReport[] {
+  const list = loadReports().filter((r) => r.id !== id);
+  try {
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(list));
+  } catch {
+    /* non-fatal */
+  }
+  return list;
+}
+
 export function newReportId(): string {
   return (
-    "r" +
-    Date.now().toString(36) +
-    "-" +
-    Math.random().toString(36).slice(2, 8)
+    "r" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8)
   );
 }

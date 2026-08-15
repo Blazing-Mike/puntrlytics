@@ -20,15 +20,14 @@ module.exports = {
       },
       fontFamily: {
         // Ledger serif — used with restraint for the big figures and headings.
-        display: ['Georgia', '"Times New Roman"', "serif"],
+        display: ["Georgia", '"Times New Roman"', "serif"],
         // Tabular labels for eyebrows and column headers.
         utility: ['"Arial Narrow"', '"Segoe UI"', "sans-serif"],
         // Ticket-print monospace for serials, field codes and receipt lines.
-        mono: ['"Courier New"', '"Courier"', "monospace"],
+        mono: ['"Geist Mono"', '"Courier New"', "monospace"],
       },
       backgroundImage: {
-        app:
-          "radial-gradient(circle at 12% 0,#223047 0 20%,transparent 42%),linear-gradient(135deg,#0a0d12,#171922 55%,#0e1219)",
+        app: "radial-gradient(circle at 12% 0,#223047 0 20%,transparent 42%),linear-gradient(135deg,#0a0d12,#171922 55%,#0e1219)",
       },
     },
   },

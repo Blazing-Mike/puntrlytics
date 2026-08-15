@@ -256,11 +256,13 @@ export const currencySymbol: Record<string, string> = {
 };
 
 // Format money: symbol + thousands separators, max 2 decimals. `signed`
-// prefixes "+" on positive values (for profit/ROI figures).
+// prefixes "+" on positive values (for profit/ROI figures). The minus sign
+// goes before the symbol so negatives read "-₦1,234" rather than "₦-1,234".
 export function fmtMoney(n: number, currency: string, signed = false): string {
   const sym = currencySymbol[currency] || "₦";
-  const s = n.toLocaleString(undefined, { maximumFractionDigits: 2 });
-  return (signed && n > 0 ? "+" : "") + sym + s;
+  const s = Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  const sign = n < 0 ? "-" : signed && n > 0 ? "+" : "";
+  return sign + sym + s;
 }
 
 // --- report computation --------------------------------------
