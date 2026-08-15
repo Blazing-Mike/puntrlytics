@@ -1,15 +1,30 @@
 {
   "name": "bet-analyze",
   "version": "1.0.0",
-  "description": "Analyze bet history and calculate profit/loss, ROI, and performance metrics.",
-  "main": "scripts/analyze.js",
-  "type": "module",
+  "private": true,
   "scripts": {
-    "start": "node scripts/analyze.js",
-    "build:web": "npm --prefix web run build",
-    "typecheck:web": "npm --prefix web run typecheck"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "build:bookmarklet": "node bookmarklet/build.mjs"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "dependencies": {
+    "dayjs": "^1.11.21",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "recharts": "^3.10.1",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
 }
