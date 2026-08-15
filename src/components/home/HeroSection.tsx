@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { BookmarkletLink } from "./BookmarkletLink";
+
 export function HeroSection({ activeProviderUrl }: { activeProviderUrl: string }) {
   return (
     <div className="mx-auto max-w-[680px] text-center">
@@ -20,16 +22,15 @@ export function HeroSection({ activeProviderUrl }: { activeProviderUrl: string }
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
-        <a
-          id="ba-bookmarklet"
+        <BookmarkletLink
+          url={activeProviderUrl}
           className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-[var(--color-lime)] px-8 py-[14px] text-[17px] font-bold leading-none text-[var(--color-blacktop)] no-underline shadow-[0_16px_38px_rgba(65,212,132,.25)] transition hover:-translate-y-0.5 hover:bg-[#54dd8e] hover:shadow-[0_22px_44px_rgba(65,212,132,.35)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--color-cyan)] motion-reduce:transition-none max-[520px]:w-full"
-          href={activeProviderUrl}
         >
           Analyze my bets
           <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">
             →
           </span>
-        </a>
+        </BookmarkletLink>
 
         <Link href="/demo" className="font-utility font-bold uppercase tracking-wider text-sm text-[var(--color-gold)] transition hover:text-[var(--color-cyan)]">
           View sample report
