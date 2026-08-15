@@ -7,7 +7,7 @@
     "build": "npm run build:bookmarklet && next build",
     "start": "next start",
     "lint": "eslint",
-    "build:bookmarklet": "node bookmarklet/build.mjs"
+    "build:bookmarklet": "cd bookmarklet && npm install && node build.mjs"
   },
   "dependencies": {
     "dayjs": "^1.11.21",
