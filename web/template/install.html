@@ -45,6 +45,7 @@
             ></a
           >
           <p
+            id="ba-drag-hint"
             class="mt-3.5 font-mono text-[11px] font-bold uppercase tracking-[1.8px] text-faint"
           >
             Drag the button to your bookmarks bar
@@ -66,6 +67,13 @@
             detects where you are and (when hosted) always loads the latest
             build, so updates reach you without re-dragging. The other tabs are
             pinned per bookmaker and fully self-contained.
+          </p>
+          <p class="mt-5">
+            <a
+              class="font-extrabold text-lime no-underline hover:underline focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
+              href="demo.html"
+              >Preview the sample report →</a
+            >
           </p>
         </div>
         <div
@@ -95,7 +103,9 @@
         </div>
       </div>
 
-      <div class="my-[18px] grid grid-cols-3 gap-2.5 max-[820px]:grid-cols-1">
+      <div
+        class="my-[18px] grid grid-cols-3 gap-2.5 max-[820px]:hidden"
+      >
         <div
           class="h-full rounded-lg border border-rule bg-ticket/90 p-[18px] transition hover:-translate-y-0.5 hover:border-gold/40 max-[520px]:p-[15px]"
         >
@@ -135,6 +145,89 @@
             Your performance report opens in a new tab.
           </p>
         </div>
+      </div>
+
+      <div
+        class="my-[18px] hidden rounded-lg border border-rule bg-ticket/90 p-5 max-[820px]:block"
+      >
+        <h2
+          class="mb-1 font-utility text-xs uppercase tracking-[1.5px] text-faint"
+        >
+          📱 On a phone? No bookmarks bar — install it in a tap
+        </h2>
+        <p class="mb-3 text-[13.5px] text-faint">
+          Copy the bookmarklet, then run it while you're logged in at
+          <span class="ba-provider-name">{{PROVIDER_NAME}}</span>. Your data
+          still never leaves your phone.
+        </p>
+
+        <button
+          id="ba-copy"
+          class="mb-2 w-full cursor-pointer rounded-lg border-0 bg-lime px-5 py-3.5 text-[15px] font-black text-blacktop shadow-[0_10px_24px_rgba(65,212,132,.25)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
+          type="button"
+        >
+          Copy bookmarklet URL
+        </button>
+        <p id="ba-copy-msg" class="mb-3 hidden text-[13px] font-bold text-lime">
+          Copied — now run it:
+        </p>
+
+        <div
+          class="mb-3 flex flex-wrap items-center gap-2"
+          role="group"
+          aria-label="Choose your device"
+        >
+          <button
+            type="button"
+            class="ba-device-tab"
+            data-device="android"
+            aria-pressed="false"
+          >
+            Android
+          </button>
+          <button
+            type="button"
+            class="ba-device-tab"
+            data-device="iphone"
+            aria-pressed="false"
+          >
+            iPhone / iPad
+          </button>
+        </div>
+
+        <ol
+          id="ba-steps-android"
+          class="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-faint"
+        >
+          <li>
+            Open
+            <span class="ba-provider-name">{{PROVIDER_NAME}}</span> and log in.
+          </li>
+          <li>
+            Tap the address bar, paste the URL, press <b>Go</b>.
+          </li>
+          <li>Your report opens in a new tab.</li>
+        </ol>
+
+        <ol
+          id="ba-steps-iphone"
+          class="ml-[18px] hidden list-decimal space-y-1.5 text-[13.5px] text-faint"
+        >
+          <li>
+            Bookmark <b>any page</b>: tap Share → Add Bookmark → Save.
+          </li>
+          <li>
+            Open your bookmarks, find it, tap <b>Edit</b> → replace the URL
+            with the copied one → <b>Done</b>.
+          </li>
+          <li>
+            On
+            <span class="ba-provider-name">{{PROVIDER_NAME}}</span>, tap that
+            bookmark — your report opens in a new tab.
+          </li>
+        </ol>
+
+        {{LOADER_HINT}}
       </div>
 
       <div
@@ -248,6 +341,70 @@
           });
         }
         apply(opts[0].id);
+
+        // --- Mobile install flow ----------------------------------------
+        // No bookmarks bar on a phone, so the bookmarklet is copied and then
+        // run from the address bar (Android) or an edited bookmark (iOS).
+        var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        var dragHint = document.getElementById("ba-drag-hint");
+        var copyBtn = document.getElementById("ba-copy");
+        var copyMsg = document.getElementById("ba-copy-msg");
+        var deviceTabs = document.querySelectorAll(".ba-device-tab");
+        var androidSteps = document.getElementById("ba-steps-android");
+        var iphoneSteps = document.getElementById("ba-steps-iphone");
+
+        function legacyCopy(t) {
+          t.focus();
+          t.select();
+          try {
+            document.execCommand("copy");
+          } catch (e) {}
+        }
+        function copyBookmarklet() {
+          if (!code) return;
+          var flash = function () {
+            if (!copyMsg) return;
+            copyMsg.classList.remove("hidden");
+            setTimeout(function () {
+              copyMsg.classList.add("hidden");
+            }, 2500);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code.value).then(flash, function () {
+              legacyCopy(code);
+              flash();
+            });
+          } else {
+            legacyCopy(code);
+            flash();
+          }
+        }
+        if (copyBtn) copyBtn.addEventListener("click", copyBookmarklet);
+        if (isMobile && link) {
+          // The hero button can't be dragged on a phone — make it copy.
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            copyBookmarklet();
+          });
+          if (dragHint)
+            dragHint.textContent = "Tap to copy — then run it on your phone";
+        }
+
+        function pickDevice(device) {
+          for (var i = 0; i < deviceTabs.length; i++) {
+            var active = deviceTabs[i].getAttribute("data-device") === device;
+            deviceTabs[i].classList.toggle("ba-active", active);
+            deviceTabs[i].setAttribute("aria-pressed", active ? "true" : "false");
+          }
+          if (androidSteps) androidSteps.hidden = device !== "android";
+          if (iphoneSteps) iphoneSteps.hidden = device !== "iphone";
+        }
+        for (var j = 0; j < deviceTabs.length; j++) {
+          deviceTabs[j].addEventListener("click", function () {
+            pickDevice(this.getAttribute("data-device"));
+          });
+        }
+        pickDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent) ? "iphone" : "android");
       })();
     </script>
   </body>

@@ -6,6 +6,10 @@
 // (where the user is logged in) and calls this endpoint with
 // `Accept: application/json` — the server then replies with JSON instead of
 // the XML you get when opening the URL in a browser address bar.
+//
+// The same endpoint is also reachable with a user-supplied session token;
+// fetchAllRealBetList below is transport-agnostic so both paths share the
+// exact pagination + normalization logic.
 
 import {
   fetchJson,
@@ -26,6 +30,18 @@ export interface RealBetListProviderOptions {
   /** Name of a cache-buster param (e.g. "_t") filled with Date.now() per request. */
   cacheBuster?: string;
 }
+
+export interface RealBetListFetchOptions {
+  apiBase: string;
+  baseParams?: Record<string, string | number>;
+  cacheBuster?: string;
+  /** Hard cap on pages walked (server calls use this to stay in time budget). */
+  maxPages?: number;
+}
+
+// One GET that returns parsed JSON. The browser bookmarklet passes a
+// same-origin fetch (logged-in session cookie).
+export type RealBetListHttpGet = (url: string) => Promise<unknown>;
 
 interface RawSelection {
   odds?: unknown;
@@ -255,73 +271,100 @@ export function normalizeOrder(raw: RawOrder): Bet {
   };
 }
 
+// Fetch-agnostic paginated reader for the realbetlist API. Walks every page
+// of the user's bet history and normalizes each order with normalizeOrder.
+// `httpGet` decides the transport: browser session cookies (bookmarklet) or
+// a user-supplied token.
+export async function fetchAllRealBetList(
+  opts: RealBetListFetchOptions,
+  httpGet: RealBetListHttpGet,
+  progress?: (msg: string) => void,
+): Promise<Bet[]> {
+  const baseParams = opts.baseParams || DEFAULT_BASE_PARAMS;
+  const maxPages = opts.maxPages && opts.maxPages > 0 ? opts.maxPages : MAX_PAGES;
+  const seen = new Set<string>();
+  const bets: Bet[] = [];
+  let total: number | null = null;
+  let pageNo = 1;
+
+  for (;;) {
+    const params: Record<string, string | number> = {
+      ...baseParams,
+      pageNo,
+      pageSize: PAGE_SIZE,
+    };
+    if (opts.cacheBuster) params[opts.cacheBuster] = Date.now();
+
+    const url = new URL(opts.apiBase);
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null && v !== "")
+        url.searchParams.set(k, String(v));
+    }
+
+    const json = await httpGet(url.href);
+    const data = (
+      json as { data?: { entityList?: RawOrder[]; totalNum?: number } }
+    ).data;
+    const list = (data && data.entityList) || [];
+    if (total === null && data && typeof data.totalNum === "number")
+      total = data.totalNum;
+
+    let added = 0;
+    for (const item of list) {
+      const b = normalizeOrder(item);
+      // Fallback key so bets whose ID couldn't be extracted never collapse
+      // into a single "empty ID" record and silently disappear.
+      const key = b.betId || "no-id:" + JSON.stringify(item);
+      if (!seen.has(key)) {
+        seen.add(key);
+        bets.push(b);
+        added++;
+      }
+    }
+
+    if (progress)
+      progress(`Fetched ${bets.length}${total ? " of ~" + total : ""} bets…`);
+
+    // Stop when the server returns nothing new or we have everything.
+    if (
+      list.length === 0 ||
+      added === 0 ||
+      (total !== null && bets.length >= total)
+    ) {
+      break;
+    }
+    // Safety cap against an infinite loop; generous enough that no real
+    // account should ever hit it (2000 × 100 = 200,000 bets).
+    if (pageNo >= maxPages) {
+      break;
+    }
+    pageNo++;
+  }
+
+  if (total !== null && bets.length < total) {
+    console.warn(
+      `[Bet Analyzer] Pagination ended early: fetched ${bets.length} of ~${total} bets. ` +
+        "The server may cap pageSize or pagination may have stalled — see Network tab.",
+    );
+  }
+
+  return bets;
+}
+
 export function createRealBetListProvider(
   opts: RealBetListProviderOptions,
 ): Provider {
-  const baseParams = opts.baseParams || DEFAULT_BASE_PARAMS;
-
   async function fetchBets(progress?: (msg: string) => void): Promise<Bet[]> {
-    const seen = new Set<string>();
-    const bets: Bet[] = [];
-    let total: number | null = null;
-    let pageNo = 1;
-
-    for (;;) {
-      const params: Record<string, string | number> = {
-        ...baseParams,
-        pageNo,
-        pageSize: PAGE_SIZE,
-      };
-      if (opts.cacheBuster) params[opts.cacheBuster] = Date.now();
-
-      const json = await fetchJson(opts.apiBase, params);
-      const data = (
-        json as { data?: { entityList?: RawOrder[]; totalNum?: number } }
-      ).data;
-      const list = (data && data.entityList) || [];
-      if (total === null && data && typeof data.totalNum === "number")
-        total = data.totalNum;
-
-      let added = 0;
-      for (const item of list) {
-        const b = normalizeOrder(item);
-        // Fallback key so bets whose ID couldn't be extracted never collapse
-        // into a single "empty ID" record and silently disappear.
-        const key = b.betId || "no-id:" + JSON.stringify(item);
-        if (!seen.has(key)) {
-          seen.add(key);
-          bets.push(b);
-          added++;
-        }
-      }
-
-      if (progress)
-        progress(`Fetched ${bets.length}${total ? " of ~" + total : ""} bets…`);
-
-      // Stop when the server returns nothing new or we have everything.
-      if (
-        list.length === 0 ||
-        added === 0 ||
-        (total !== null && bets.length >= total)
-      ) {
-        break;
-      }
-      // Safety cap against an infinite loop; generous enough that no real
-      // account should ever hit it (2000 × 100 = 200,000 bets).
-      if (pageNo >= MAX_PAGES) {
-        break;
-      }
-      pageNo++;
-    }
-
-    if (total !== null && bets.length < total) {
-      console.warn(
-        `[Bet Analyzer] Pagination ended early: fetched ${bets.length} of ~${total} bets. ` +
-          "The server may cap pageSize or pagination may have stalled — see Network tab.",
-      );
-    }
-
-    return bets;
+    // Same-origin browser transport: rides the logged-in session cookie.
+    return fetchAllRealBetList(
+      {
+        apiBase: opts.apiBase,
+        baseParams: opts.baseParams,
+        cacheBuster: opts.cacheBuster,
+      },
+      (url) => fetchJson(url),
+      progress,
+    );
   }
 
   return {

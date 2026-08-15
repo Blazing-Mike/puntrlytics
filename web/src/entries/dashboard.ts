@@ -11,17 +11,12 @@
 
 import { fmtMoney, type Report } from "../core";
 import { renderReport } from "../render";
-
-interface StoredReport {
-  id: string;
-  providerName: string;
-  currency: string;
-  savedAt: string;
-  report: Report;
-}
-
-const KEY = "betlytics:reports";
-const MAX_SAVED = 50;
+import {
+  loadReports,
+  saveReport,
+  newReportId,
+  type StoredReport,
+} from "../report-store";
 
 function esc(s: string): string {
   return s
@@ -29,25 +24,6 @@ function esc(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-function load(): StoredReport[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? (arr as StoredReport[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function save(list: StoredReport[]): void {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(list.slice(0, MAX_SAVED)));
-  } catch {
-    /* storage full / blocked — non-fatal */
-  }
 }
 
 function renderList(reports: StoredReport[], selectedId: string | null): void {
@@ -124,7 +100,7 @@ function formatSavedAt(iso: string): string {
 }
 
 function init(): void {
-  let reports = load();
+  let reports = loadReports();
 
   // New report handed over via the URL fragment.
   if (location.hash && location.hash.length > 1) {
@@ -134,18 +110,13 @@ function init(): void {
       ) as Partial<StoredReport>;
       if (payload && payload.report) {
         const incoming: StoredReport = {
-          id:
-            "r" +
-            Date.now().toString(36) +
-            "-" +
-            Math.random().toString(36).slice(2, 8),
+          id: newReportId(),
           providerName: String(payload.providerName || "Bookmaker"),
           currency: String(payload.currency || "NGN"),
           savedAt: formatSavedAt(String(payload.savedAt || "")),
           report: payload.report,
         };
-        reports = [incoming, ...reports].slice(0, MAX_SAVED);
-        save(reports);
+        reports = saveReport(incoming);
         // Clean the URL so refreshing doesn't re-import the same data.
         history.replaceState(null, "", location.pathname + location.search);
         renderList(reports, incoming.id);

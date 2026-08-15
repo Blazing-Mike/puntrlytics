@@ -98,4 +98,37 @@
     background: rgba(7, 9, 14, 0.16);
     color: #07090e;
   }
+
+  /* Device switcher tabs on the mobile install flow */
+  .ba-device-tab {
+    border: 1px solid #374153;
+    background: #202938;
+    color: #9aa4b6;
+    border-radius: 9999px;
+    padding: 6px 14px;
+    font:
+      800 11px/1 "Arial Narrow",
+      "Segoe UI",
+      sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+  .ba-device-tab:hover {
+    color: #f2eee4;
+    border-color: #f7b955;
+  }
+  .ba-device-tab:focus-visible {
+    outline: 3px solid #5fd4ff;
+    outline-offset: 3px;
+  }
+  .ba-device-tab.ba-active {
+    background: #f7b955;
+    color: #07090e;
+    border-color: #f7b955;
+  }
 }

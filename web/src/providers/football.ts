@@ -3,10 +3,15 @@
 // using the logged-in session (the page itself loads more bets as you scroll).
 
 import { createRealBetListProvider } from "./realbetlist";
+import { getProvider } from "./registry";
+
+const meta = getProvider("football")!;
 
 export const footballProvider = createRealBetListProvider({
-  id: "football",
-  name: "football.com",
-  currency: "NGN",
-  apiBase: "https://www.football.com/api/ng/orders/order/v2/realbetlist",
+  id: meta.id,
+  name: meta.name,
+  currency: meta.currency,
+  apiBase: meta.apiBase,
+  baseParams: meta.baseParams,
+  cacheBuster: meta.cacheBuster,
 });

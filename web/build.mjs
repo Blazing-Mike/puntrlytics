@@ -54,7 +54,11 @@ execFileSync(
 );
 const tailwindCss = fs.readFileSync(tailwindOut, "utf8");
 
-const SKIP_AS_BOOKMARKLET = new Set(["demo.ts", "verify.ts", "dashboard.ts"]);
+const SKIP_AS_BOOKMARKLET = new Set([
+  "demo.ts",
+  "verify.ts",
+  "dashboard.ts",
+]);
 
 const entries = fs
   .readdirSync(entriesDir)
@@ -326,6 +330,13 @@ html = html
 html = html.split("{{BUILD_DATE}}").join(new Date().toISOString().slice(0, 10));
 html = html.split("{{DEMO_HREF}}").join("demo.html");
 html = html.split("{{DEMO_SHOT}}").join("demo-dashboard.png");
+html = html
+  .split("{{LOADER_HINT}}")
+  .join(
+    loaderUrl
+      ? "<p class=\"mt-3 text-[12.5px] text-faint\">Tip: on a phone, switch to the <b>Auto-update</b> tab above — its bookmarklet URL is tiny and updates itself automatically.</p>"
+      : "",
+  );
 html = html.split("{{TAILWIND_CSS}}").join(tailwindCss);
 fs.writeFileSync(path.join(dist, "index.html"), html, "utf8");
 console.log("✔ index.html (install page)");
