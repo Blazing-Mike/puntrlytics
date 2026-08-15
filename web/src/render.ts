@@ -104,11 +104,122 @@ const colorClass: Record<string, string> = {
   "": "",
 };
 
+// Compact axis labels for the equity curve (currency-agnostic: +12.5k, −1.2M).
+function compact(n: number): string {
+  if (n === 0) return "0";
+  const abs = Math.abs(n);
+  const sign = n > 0 ? "+" : "−";
+  if (abs >= 1_000_000)
+    return sign + (abs / 1_000_000).toFixed(abs >= 10_000_000 ? 0 : 1) + "M";
+  if (abs >= 1_000)
+    return sign + (abs / 1_000).toFixed(abs >= 100_000 ? 0 : 1) + "k";
+  return sign + Math.round(abs).toString();
+}
+
+// Cumulative profit "equity curve" — a self-contained inline SVG line/area
+// chart of running net profit over the analyzed period (no chart library).
+function equityCurve(report: Report, cur: string): string {
+  const days = report.timeline;
+  if (days.length < 2) return "";
+
+  const cum: number[] = [];
+  let acc = 0;
+  for (const d of days) {
+    acc += d.profit;
+    cum.push(acc);
+  }
+
+  const W = 720;
+  const H = 200;
+  const padL = 10;
+  const padR = 10;
+  const padT = 18;
+  const padB = 8;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const lo = Math.min(0, ...cum);
+  const hi = Math.max(0, ...cum);
+  const span = hi - lo || 1;
+
+  const x = (i: number): number =>
+    padL + (days.length === 1 ? innerW / 2 : (i / (days.length - 1)) * innerW);
+  const y = (v: number): number => padT + ((hi - v) / span) * innerH;
+
+  const pts = cum.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const zeroY = y(0).toFixed(1);
+  const finalVal = cum[cum.length - 1];
+  const up = finalVal >= 0;
+  const stroke = up ? "#41d484" : "#ff7084";
+
+  const areaPath =
+    `M ${pts[0]} ` +
+    pts
+      .slice(1)
+      .map((p) => `L ${p}`)
+      .join(" ") +
+    ` L ${x(days.length - 1).toFixed(1)},${zeroY} L ${x(0).toFixed(1)},${zeroY} Z`;
+  const linePath = `M ${pts.join(" L ")}`;
+
+  const grid = [0, 0.25, 0.5, 0.75, 1]
+    .map((t) => {
+      const gy = (padT + t * innerH).toFixed(1);
+      const val = hi - t * span;
+      return (
+        `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" stroke="rgba(242,238,228,0.08)" stroke-width="1"/>` +
+        `<text x="${W - padR - 4}" y="${(parseFloat(gy) - 4).toFixed(1)}" text-anchor="end" font-size="10" fill="rgba(154,164,182,0.9)">${esc(compact(val))}</text>`
+      );
+    })
+    .join("");
+
+  const dots = cum
+    .map((v, i) => {
+      const cx = x(i).toFixed(1);
+      const cy = y(v).toFixed(1);
+      return i === cum.length - 1
+        ? `<circle cx="${cx}" cy="${cy}" r="4.5" fill="${stroke}"/><circle cx="${cx}" cy="${cy}" r="8.5" fill="none" stroke="${stroke}" stroke-opacity="0.35" stroke-width="1.5"/>`
+        : `<circle cx="${cx}" cy="${cy}" r="2.5" fill="${stroke}" fill-opacity="0.85"/>`;
+    })
+    .join("");
+
+  const firstDate = days[0].date;
+  const lastDate = days[days.length - 1].date;
+
+  return `<div class="${sectionCard}">${sectionHeader("Profit curve — cumulative")}
+    <div class="mb-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+      <div>
+        <div class="font-display text-[clamp(26px,4vw,40px)] font-black leading-none tabular-nums ${up ? "text-lime" : "text-rose"}">${fmtMoney(finalVal, cur, true)}</div>
+        <div class="${hint}">running net profit across ${days.length} active day${days.length === 1 ? "" : "s"}</div>
+      </div>
+      <div class="text-right font-mono text-[10px] uppercase tracking-[1px] text-faint">${esc(firstDate)} → ${esc(lastDate)}</div>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" class="block w-full" role="img" aria-label="Cumulative profit curve from ${esc(firstDate)} to ${esc(lastDate)}, ending at ${fmtMoney(finalVal, cur, true)}">
+      <defs>
+        <linearGradient id="ba-equity-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${stroke}" stop-opacity="0.26"/>
+          <stop offset="1" stop-color="${stroke}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${grid}
+      <line x1="${padL}" y1="${zeroY}" x2="${W - padR}" y2="${zeroY}" stroke="rgba(242,238,228,0.22)" stroke-width="1"/>
+      <path d="${areaPath}" fill="url(#ba-equity-fill)"/>
+      <path d="${linePath}" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+    </svg>
+    <div class="mt-1.5 flex justify-between font-mono text-[10px] uppercase tracking-[1px] text-faint">
+      <span>${esc(firstDate)}</span>
+      <span>${esc(lastDate)}</span>
+    </div>
+    <div class="${hint}">Each dot is a day's closing balance; the line tracks cumulative profit/loss over the analyzed period.</div>
+  </div>`;
+}
+
 export function renderReport(report: Report, opts: RenderOptions): string {
   const cur = opts.currency || "NGN";
   const c = report.counts;
   const genAt = opts.generatedAt || new Date().toLocaleString();
   const hasData = report.timeline.length > 0 || report.settledTotal > 0;
+  const equityBlock = equityCurve(report, cur);
 
   // --- KPI cards (receipt-style fields) -------------------------
   const kpi = (
@@ -304,6 +415,7 @@ export function renderReport(report: Report, opts: RenderOptions): string {
   ${
     hasData
       ? `<section class="mb-[18px] grid grid-cols-5 gap-2.5 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1">${kpis}</section>
+  ${equityBlock}
   <section class="${sectionCard}">${sectionHeader("Highlights")}<div class="grid grid-cols-2 gap-2.5 max-[560px]:grid-cols-1">${highlights}</div></section>
   <section class="${sectionCard}">${sectionHeader("Status breakdown")}<div class="grid grid-cols-5 gap-2 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1">${chips}</div></section>
   <section class="${sectionCard}">${sectionHeader("Performance by odds range")}

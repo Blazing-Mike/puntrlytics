@@ -1,3 +1,22 @@
+/* Geist Mono — shipped as a static asset next to the HTML (dist root), so the
+   relative url() resolves same-origin in every page that inlines this CSS
+   (index, demo, and the dashboard's srcdoc report). Variable font covers
+   every weight in one file; it's only downloaded once a page actually uses it. */
+@font-face {
+  font-family: "Geist Mono";
+  src: url("./GeistMono-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("./GeistMono-Italic-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
