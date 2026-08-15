@@ -62,8 +62,10 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
       {activeDevice === "android" && (
         <ol className="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-[var(--color-faint)]">
           <li>Log in to either <span className="font-bold text-[var(--color-ink)]">SportyBet</span> or <span className="font-bold text-[var(--color-ink)]">football.com</span>.</li>
-          <li>Tap the address bar, paste the URL, and press <b>Go</b>.</li>
-          <li>Your report opens in a new tab.</li>
+          <li>Tap the address bar, paste the copied code, and press <b>Go</b>.</li>
+          <li className="text-[12px] text-[var(--color-gold)] mt-2">
+            <b>Important:</b> Some mobile browsers (like Chrome) remove the <code>javascript:</code> text when you paste for security. If nothing happens, type <code>javascript:</code> manually at the very beginning of the address bar before pressing Go!
+          </li>
         </ol>
       )}
 
