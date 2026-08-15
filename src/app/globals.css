@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0d12;
+  --foreground: #f2eee4;
+}
+
+@theme {
+  --color-ink: #f2eee4;
+  --color-ticket: #202938;
+  --color-ticket2: #1a2230;
+  --color-rule: #374153;
+  --color-faint: #9aa4b6;
+  --color-lime: #41d484;
+  --color-rose: #ff7084;
+  --color-cyan: #5fd4ff;
+  --color-gold: #f7b955;
+  --color-blacktop: #07090e;
+
+  /* Combine the user's requested Inter + Geist Mono pair */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-utility: "Arial Narrow", "Segoe UI", sans-serif;
+
+  /* Background from original config */
+  --background-image-app: radial-gradient(circle at 12% 0, #223047 0 20%, transparent 42%), linear-gradient(135deg, #0a0d12, #171922 55%, #0e1219);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body, h1, h2, h3, p, ul {
+    margin: 0;
+  }
+
+  ul {
+    padding: 0;
+  }
+
+  button, textarea {
+    font: inherit;
+  }
+
+  body {
+    background-image: var(--background-image-app);
+    background-color: var(--background);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.18;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 22px,
+        rgba(255, 255, 255, 0.06) 22px 23px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 17px,
+        rgba(255, 255, 255, 0.04) 17px 18px
+      );
+  }
+
+
+  /* Device switcher tabs on the mobile install flow */
+  .ba-device-tab {
+    border: 1px solid var(--color-rule);
+    background: var(--color-ticket);
+    color: var(--color-faint);
+    border-radius: 9999px;
+    padding: 6px 14px;
+    font-family: var(--font-utility);
+    font-weight: 800;
+    font-size: 11px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .ba-device-tab:hover {
+    color: var(--color-ink);
+    border-color: var(--color-gold);
+  }
+  .ba-device-tab:focus-visible {
+    outline: 3px solid var(--color-cyan);
+    outline-offset: 3px;
+  }
+  .ba-device-tab.ba-active {
+    background: var(--color-gold);
+    color: var(--color-blacktop);
+    border-color: var(--color-gold);
+  }
+}
