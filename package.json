@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run build:bookmarklet && next build",
     "start": "next start",
     "lint": "eslint",
     "build:bookmarklet": "node bookmarklet/build.mjs"
