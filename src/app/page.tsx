@@ -11,12 +11,14 @@ import { InfoSection } from "@/components/home/InfoSection";
 export default function Home() {
   const [copied, setCopied] = useState(false);
 
-  // Use Auto by default since it detects the provider automatically
-  const activeProvider = bookmarkletsData.bookmarklets.find((b) => b.id === "auto") || bookmarkletsData.bookmarklets[0];
+  // Use the loader by default (if generated) for a short URL, otherwise fallback to auto
+  const activeProvider = bookmarkletsData.bookmarklets.find((b) => b.id === "loader") || bookmarkletsData.bookmarklets.find((b) => b.id === "auto") || bookmarkletsData.bookmarklets[0];
 
   const handleCopy = () => {
     if (activeProvider && navigator.clipboard) {
-      navigator.clipboard.writeText(activeProvider.code).then(() => {
+      // Decode the URI-encoded URL so it looks like readable javascript: code when pasted, but KEEP the javascript: prefix!
+      const decodedUrl = decodeURIComponent(activeProvider.url);
+      navigator.clipboard.writeText(decodedUrl).then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2500);
       });
