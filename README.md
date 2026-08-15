@@ -61,6 +61,8 @@ Build output (`web/dist/`) — host this folder on any static host:
 
 **User flow:** drag the button to the bookmarks bar → log in to your bookmaker → click the bookmark on the Bet History page → report opens in a new tab. Both providers use the same `realbetlist` JSON API; the normalizer is shared (`web/src/providers/realbetlist.ts`).
 
+**On mobile:** there's no bookmarks bar, so the install page auto-detects phones and switches to a copy-and-run flow — Android users paste the bookmarklet into the address bar while on the bookmaker site; iPhone users paste it into a bookmark's URL field. When built with `BOOKMARKLET_HOST`, an **Auto-update** tab is offered whose tiny loader URL fits under Safari's bookmarklet size limit and self-updates.
+
 ### Adding a bookmaker
 
 1. Log in to the site and find its bet-history JSON API (DevTools → Network).
