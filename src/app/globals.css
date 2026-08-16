@@ -29,11 +29,13 @@
 
   /* Toast entrance */
   --animate-toast-in: toast-in 0.25s ease-out;
+
   @keyframes toast-in {
     from {
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -46,7 +48,12 @@
     box-sizing: border-box;
   }
 
-  body, h1, h2, h3, p, ul {
+  body,
+  h1,
+  h2,
+  h3,
+  p,
+  ul {
     margin: 0;
   }
 
@@ -54,7 +61,8 @@
     padding: 0;
   }
 
-  button, textarea {
+  button,
+  textarea {
     font: inherit;
   }
 
@@ -74,16 +82,12 @@
     pointer-events: none;
     opacity: 0.18;
     background:
-      repeating-linear-gradient(
-        90deg,
+      repeating-linear-gradient(90deg,
         transparent 0 22px,
-        rgba(255, 255, 255, 0.06) 22px 23px
-      ),
-      repeating-linear-gradient(
-        0deg,
+        rgba(255, 255, 255, 0.06) 22px 23px),
+      repeating-linear-gradient(0deg,
         transparent 0 17px,
-        rgba(255, 255, 255, 0.04) 17px 18px
-      );
+        rgba(255, 255, 255, 0.04) 17px 18px);
   }
 
 
@@ -103,14 +107,17 @@
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
+
   .ba-device-tab:hover {
     color: var(--color-ink);
     border-color: var(--color-gold);
   }
+
   .ba-device-tab:focus-visible {
     outline: 3px solid var(--color-cyan);
     outline-offset: 3px;
   }
+
   .ba-device-tab.ba-active {
     background: var(--color-gold);
     color: var(--color-blacktop);
@@ -122,24 +129,29 @@
     scrollbar-width: thin;
     scrollbar-color: var(--color-rule) transparent;
   }
+
   *::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
+
   *::-webkit-scrollbar-track {
     background: transparent;
   }
+
   *::-webkit-scrollbar-thumb {
     background-color: var(--color-rule);
     border-radius: 9999px;
     border: 3px solid transparent;
     background-clip: padding-box;
   }
+
   *::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-faint);
     background-clip: padding-box;
     border: 3px solid transparent;
   }
+
   *::-webkit-scrollbar-corner {
     background: transparent;
   }

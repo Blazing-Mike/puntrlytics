@@ -24,11 +24,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Puntrlytics",
+    images: [{ url: '/og_image.png' }]
   },
   twitter: {
     card: "summary_large_image",
     title: "Puntrlytics | Understand your true betting performance",
     description: "Get instant insights into your true betting profit, ROI, and win-rate. 100% private, runs entirely in your browser.",
+    images: ['/og_image.png']
   },
   keywords: ["betting analyzer", "bet history", "profit tracker", "sports betting roi", "betting win rate calculator"],
   authors: [{ name: "Puntrlytics" }],

@@ -129,13 +129,21 @@ export function HistorySidebar({
             const isPos = r.report.netProfit >= 0;
 
             return (
-              <button
+              <div
                 key={r.id}
+                role="button"
+                tabIndex={0}
                 className={`group relative flex w-full cursor-pointer items-center justify-between border-l-4 p-2 py-5 pr-6 text-left transition-colors focus-visible:outline focus-visible:outline-2 -focus-visible:outline-offset-2 focus-visible:outline-cyan ${isActive
                   ? "border-gold bg-ticket"
                   : "border-transparent"
                   }`}
                 onClick={() => selectReport(r.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    selectReport(r.id);
+                  }
+                }}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ProviderLogo providerName={r.providerName} size={40} />
@@ -180,7 +188,7 @@ export function HistorySidebar({
                     <path d="m6 6 12 12" />
                   </svg>
                 </button>
-                </button>
+                </div>
             );
           })}
         </div>
