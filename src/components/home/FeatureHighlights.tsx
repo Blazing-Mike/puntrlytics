@@ -20,7 +20,7 @@ export function FeatureHighlights() {
   return (
     <section className="my-8 md:py-10">
       <div className="mb-6">
-        <h2 className="font-display text-center text-[clamp(28px,5vw,36px)] font-black uppercase leading-none tracking-wider text-ink">
+        <h2 className="font-display text-center text-[clamp(28px,5vw,36px)] font-black uppercase leading-none tracking-wider text-balance text-ink">
           Why <span className="text-gold">Puntrlytics?</span>
         </h2>
       </div>

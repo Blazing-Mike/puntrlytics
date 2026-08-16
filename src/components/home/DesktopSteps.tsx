@@ -2,7 +2,7 @@ export function DesktopSteps() {
   return (
     <div className="my-10 max-[820px]:hidden">
       <div className="mb-6">
-        <h2 className="font-display text-center text-2xl font-black uppercase tracking-wider text-ink">
+        <h2 className="font-display text-center text-2xl font-black uppercase tracking-wider text-balance text-ink">
           How It Works
         </h2>
       </div>

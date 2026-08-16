@@ -86,7 +86,7 @@ export function ReportView({ reportData, showShare = true }: { reportData: Store
             <button
               onClick={handleShare}
               disabled={isSharing}
-              className="rounded bg-cyan/20 px-3 py-1.5 font-bold text-cyan text-xs uppercase tracking-wider hover:bg-cyan/30 transition-colors disabled:opacity-50"
+              className="rounded bg-cyan/20 px-3 py-1.5 font-bold text-cyan text-xs uppercase tracking-wider hover:bg-cyan/30 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
             >
               {isSharing ? "Generating..." : "Share Report"}
             </button>

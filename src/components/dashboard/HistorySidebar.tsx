@@ -105,19 +105,19 @@ export function HistorySidebar({
             const isPos = r.report.netProfit >= 0;
 
             return (
-              <div
+              <button
                 key={r.id}
-                className={`group relative flex cursor-pointer items-center justify-between border-l-4 p-2 py-5 pr-6 transition-colors ${isActive
+                className={`group relative flex w-full cursor-pointer items-center justify-between border-l-4 p-2 py-5 pr-6 text-left transition-colors focus-visible:outline focus-visible:outline-2 -focus-visible:outline-offset-2 focus-visible:outline-cyan ${isActive
                   ? "border-gold bg-ticket"
                   : "border-transparent"
                   }`}
                 onClick={() => selectReport(r.id)}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <ProviderLogo providerName={r.providerName} size={40} />
-                  <div className="flex flex-col">
-                    <span className="font-bold text-ink">{r.providerName}</span>
-                    <span className="font-utility text-[11px] text-faint">
+                  <div className="flex flex-col min-w-0 overflow-hidden">
+                    <span className="font-bold text-ink truncate">{r.providerName}</span>
+                    <span className="font-utility text-[11px] text-faint whitespace-nowrap">
                       {dayjs(r.savedAt).format("MMM D, YYYY h:mm A")}
                     </span>
                   </div>
@@ -156,7 +156,7 @@ export function HistorySidebar({
                     <path d="m6 6 12 12" />
                   </svg>
                 </button>
-              </div>
+                </button>
             );
           })}
         </div>
