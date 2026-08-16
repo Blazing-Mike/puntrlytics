@@ -18,16 +18,16 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
   }, []);
 
   return (
-    <div className="my-[18px] hidden rounded-lg border border-[var(--color-rule)] bg-[var(--color-ticket)]/90 p-5 max-[820px]:block">
-      <h2 className="mb-1 font-utility text-xs uppercase tracking-[1.5px] text-[var(--color-faint)]">
+    <div className="my-[18px] hidden rounded-lg border border-rule bg-ticket/90 p-5 max-[820px]:block">
+      <h2 className="mb-1 font-utility text-xs uppercase tracking-[1.5px] text-faint">
         📱 On a phone? No bookmarks bar — install it in a tap
       </h2>
-      <p className="mb-3 text-[13.5px] text-[var(--color-faint)]">
-        Click the button to copy the code, then run it while you're logged in at <span className="font-bold">SportyBet or football.com</span>. Your data still never leaves your phone.
+      <p className="mb-3 text-[13.5px] text-faint">
+        Click the button to copy the code, then add it as a bookmark on your phone (steps below) and run it while you're logged in at <span className="font-bold">SportyBet, MSport, Stake.com, or football.com</span>. Your data still never leaves your phone.
       </p>
 
       <button
-        className="mb-2 w-full cursor-pointer rounded-lg border-0 bg-[var(--color-lime)] px-5 py-3.5 text-[15px] font-black text-[var(--color-blacktop)] shadow-[0_10px_24px_rgba(65,212,132,.25)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--color-cyan)]"
+        className="mb-2 w-full cursor-pointer rounded-lg border-0 bg-lime px-5 py-3.5 text-[15px] font-black text-blacktop shadow-[0_10px_24px_rgba(65,212,132,.25)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
         type="button"
         onClick={onCopy}
       >
@@ -35,7 +35,7 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
       </button>
 
       {copied && (
-        <p className="mb-3 text-[13px] font-bold text-[var(--color-lime)]">
+        <p className="mb-3 text-[13px] font-bold text-lime">
           Copied — now run it:
         </p>
       )}
@@ -60,20 +60,22 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
       </div>
 
       {activeDevice === "android" && (
-        <ol className="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-[var(--color-faint)]">
-          <li>Log in to either <span className="font-bold text-[var(--color-ink)]">SportyBet</span> or <span className="font-bold text-[var(--color-ink)]">football.com</span>.</li>
-          <li>Tap the address bar, paste the copied code, and press <b>Go</b>.</li>
-          <li className="text-[12px] text-[var(--color-gold)] mt-2">
-            <b>Important:</b> Some mobile browsers (like Chrome) remove the <code>javascript:</code> text when you paste for security. If nothing happens, type <code>javascript:</code> manually at the very beginning of the address bar before pressing Go!
+        <ol className="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-faint">
+          <li>Log in to <span className="font-bold text-ink">SportyBet, MSport, Stake.com,</span> or <span className="font-bold text-ink">football.com</span>.</li>
+          <li>Add the bookmarklet: tap <b>⋮ → Bookmarks → New bookmark</b> (or the <b>☆</b> star on any page), paste the copied code into the URL field, name it <b>Betlytics</b>, and save.</li>
+          <li>Run it while you're on the betting site: tap <b>⋮ → Bookmarks</b>, then tap <b>Betlytics</b>.</li>
+          <li className="text-[12px] text-gold mt-2">
+            <b>Important:</b> Some Chrome versions strip the <code>javascript:</code> text when you paste into the bookmark URL. If the bookmark won't run, reopen its edit screen and re-type <code>javascript:</code> at the very start of the URL before saving.
           </li>
         </ol>
       )}
 
       {activeDevice === "iphone" && (
-        <ol className="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-[var(--color-faint)]">
-          <li>Bookmark <b>any page</b>: tap Share → Add Bookmark → Save.</li>
-          <li>Open your bookmarks, find it, tap <b>Edit</b> → replace the URL with the copied one → <b>Done</b>.</li>
-          <li>Log in to either <span className="font-bold text-[var(--color-ink)]">SportyBet</span> or <span className="font-bold text-[var(--color-ink)]">football.com</span> and tap that bookmark.</li>
+        <ol className="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-faint">
+          <li>Add the bookmarklet: bookmark <b>any page</b> (Share → Add Bookmark → Save), then open your bookmarks, tap <b>Edit</b>, replace the URL with the copied code, name it <b>Betlytics</b>, and tap <b>Done</b>.</li>
+          <li>Log in to <span className="font-bold text-ink">SportyBet, MSport, Stake.com,</span> or <span className="font-bold text-ink">football.com</span>.</li>
+          <li>Tap the <b>Share</b> icon (square with up arrow), swipe left on the bottom row → <b>More</b> → turn on <b>Bookmarks</b>.</li>
+          <li>Tap <b>Bookmarks</b> in the share sheet and select <b>Betlytics</b> — it runs on the page you're viewing.</li>
         </ol>
       )}
     </div>

@@ -177,16 +177,16 @@ export function fetchJson(
   // Always log the exact URL we're about to request — makes it easy to spot a
   // stale bookmarklet (doubled path / double `_t`) in the console.
   console.log("[Betlytics] GET " + url.href);
-  return getCleanFetch()(
-    url,
-    Object.assign(
-      {
-        credentials: "include",
-        headers: { Accept: "application/json, text/plain, */*" },
-      },
-      init || {},
-    ),
-  ).then((res) => {
+  const finalInit = Object.assign(
+    { credentials: "include" as RequestCredentials },
+    init || {}
+  );
+  finalInit.headers = {
+    Accept: "application/json, text/plain, */*",
+    ...(init?.headers as Record<string, string> || {})
+  };
+
+  return getCleanFetch()(url, finalInit).then((res) => {
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     return res.text().then((t) => JSON.parse(t) as unknown);
   });
@@ -255,14 +255,27 @@ export const currencySymbol: Record<string, string> = {
   ZAR: "R",
 };
 
+// Money parts (sign / symbol / amount) split apart so the UI can size the
+// symbol independently of the figure (e.g. a small ₦ next to a large number).
+export function moneyParts(
+  n: number,
+  currency: string,
+  signed = false,
+): { sign: string; symbol: string; amount: string } {
+  const symbol = currencySymbol[currency] || "₦";
+  const amount = Math.abs(n).toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+  });
+  const sign = n < 0 ? "-" : signed && n > 0 ? "+" : "";
+  return { sign, symbol, amount };
+}
+
 // Format money: symbol + thousands separators, max 2 decimals. `signed`
 // prefixes "+" on positive values (for profit/ROI figures). The minus sign
 // goes before the symbol so negatives read "-₦1,234" rather than "₦-1,234".
 export function fmtMoney(n: number, currency: string, signed = false): string {
-  const sym = currencySymbol[currency] || "₦";
-  const s = Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
-  const sign = n < 0 ? "-" : signed && n > 0 ? "+" : "";
-  return sign + sym + s;
+  const { sign, symbol, amount } = moneyParts(n, currency, signed);
+  return sign + symbol + amount;
 }
 
 // --- report computation --------------------------------------

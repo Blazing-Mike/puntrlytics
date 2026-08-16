@@ -18,14 +18,48 @@ function getAvatarColor(name: string): string {
   return AVATAR_COLORS[h % AVATAR_COLORS.length];
 }
 
-export function ProviderLogo({ providerName, size = 40 }: { providerName: string; size?: number }) {
+export function ProviderLogo({ providerName, size = 20 }: { providerName: string; size?: number }) {
   const nameLower = providerName.toLowerCase();
-  
+
   if (nameLower.includes("sporty")) {
     return <Image src="/sportylogo.svg" alt="SportyBet" width={size} height={size} className="shrink-0" />;
   }
+  if (nameLower.includes("stake")) {
+    // The Stake mark is white, so it needs its brand-color chip behind it.
+    return (
+      <div
+        className="flex shrink-0 items-center justify-center overflow-hidden rounded-full"
+        style={{
+          width: size,
+          height: size,
+          backgroundColor: "#1A2C38",
+        }}
+        title="Stake"
+      >
+        <Image
+          src="/stake.svg"
+          alt="Stake"
+          width={15}
+          height={20}
+          className="shrink-0"
+        />
+      </div>
+    );
+  }
   if (nameLower.includes("football.com") || nameLower.includes("football")) {
     return <Image src="/footballcom.svg" alt="football.com" width={size} height={size} className="shrink-0" />;
+  }
+  if (nameLower.includes("msport")) {
+    // No MSport logo asset yet — use their brand-yellow chip with the initial.
+    return (
+      <div
+        className="flex shrink-0 items-center justify-center overflow-hidden rounded-full font-black text-black"
+        style={{ width: size, height: size, backgroundColor: "#ffca27", fontSize: size * 0.42 }}
+        title="MSport"
+      >
+        M
+      </div>
+    );
   }
 
   // Fallback avatar

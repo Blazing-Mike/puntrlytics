@@ -9,6 +9,10 @@ export interface ProviderMeta {
   apiBase: string;
   baseParams?: Record<string, string | number>;
   cacheBuster?: string;
+  listKey?: string;
+  totalKey?: string;
+  pageParam?: string;
+  sizeParam?: string;
   /** Origin the user must be logged into (used by the token guide). */
   origin: string;
   /** Custom headers the site's API expects (clientid/operid/platform). */
@@ -40,8 +44,55 @@ export const PROVIDERS: Record<string, ProviderMeta> = {
     referer:
       "https://www.football.com/ng/my_accounts/bet_history/sport_bets?isSettled=10",
   },
+  msport: {
+    id: "msport",
+    name: "MSport",
+    currency: "NGN",
+    apiBase: "https://www.msport.com/api/ng/orders/real-sports/list",
+    baseParams: { isHistory: "1" }, // from user payload
+    pageParam: "pageNumber",
+    sizeParam: "limit",
+    listKey: "orders",
+    totalKey: "totalCount",
+    origin: "https://www.msport.com",
+    referer: "https://www.msport.com/ng/web/my_bets/history/archived",
+  },
+};
+
+const CURRENCIES: Record<string, string> = {
+  ng: "NGN",
+  gh: "GHS",
+  ke: "KES",
+  zm: "ZMW",
+  tz: "TZS",
+  ug: "UGX",
 };
 
 export function getProvider(id: string | undefined): ProviderMeta | undefined {
-  return PROVIDERS[String(id || "").toLowerCase()];
+  const base = PROVIDERS[String(id || "").toLowerCase()];
+  if (!base) return undefined;
+
+  const provider = { ...base };
+
+  // When running as a bookmarklet on the betting site, the URL will often
+  // start with the country code (e.g. /ng/, /ke/, /gh/).
+  if (typeof window !== "undefined" && window.location) {
+    const match = window.location.pathname.match(/^\/([a-z]{2})\//i);
+    if (match) {
+      const countryCode = match[1].toLowerCase();
+      
+      // Set the currency dynamically based on the country code
+      if (CURRENCIES[countryCode]) {
+        provider.currency = CURRENCIES[countryCode];
+      }
+
+      // Rewrite the hardcoded /ng/ in API URLs to match the current country
+      provider.apiBase = provider.apiBase.replace(/\/ng\//g, `/${countryCode}/`);
+      if (provider.referer) {
+        provider.referer = provider.referer.replace(/\/ng\//g, `/${countryCode}/`);
+      }
+    }
+  }
+
+  return provider;
 }

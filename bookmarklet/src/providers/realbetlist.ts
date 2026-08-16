@@ -29,6 +29,16 @@ export interface RealBetListProviderOptions {
   baseParams?: Record<string, string | number>;
   /** Name of a cache-buster param (e.g. "_t") filled with Date.now() per request. */
   cacheBuster?: string;
+  /** Key for the array of bets in the JSON response (default: "entityList") */
+  listKey?: string;
+  /** Key for the total count of bets in the JSON response (default: "totalNum") */
+  totalKey?: string;
+  /** Query param for the page number (default: "pageNo") */
+  pageParam?: string;
+  /** Query param for the page size (default: "pageSize") */
+  sizeParam?: string;
+  /** Custom headers to send with the request */
+  headers?: Record<string, string> | (() => Record<string, string>);
 }
 
 export interface RealBetListFetchOptions {
@@ -37,6 +47,11 @@ export interface RealBetListFetchOptions {
   cacheBuster?: string;
   /** Hard cap on pages walked (server calls use this to stay in time budget). */
   maxPages?: number;
+  listKey?: string;
+  totalKey?: string;
+  pageParam?: string;
+  sizeParam?: string;
+  headers?: Record<string, string> | (() => Record<string, string>);
 }
 
 // One GET that returns parsed JSON. The browser bookmarklet passes a
@@ -187,6 +202,16 @@ export function normalizeOrder(raw: RawOrder): Bet {
     if (selOdds.length > 0) odds = selOdds.reduce((a, b) => a * b, 1);
   }
 
+  // If odds are still missing (e.g., MSport), try to infer them from potential payout or actual payout.
+  if (!odds) {
+    const potentialReturn = toNum(pick(lower, ["toreturn", "potentialreturn"]));
+    if (potentialReturn > 0 && stake > 0) {
+      odds = potentialReturn / stake;
+    } else if (payout > 0 && stake > 0) {
+      odds = payout / stake;
+    }
+  }
+
   // Bet type + sport/tournament, derived from the selections. The API carries
   // `orderType` (1 = single, 2 = multiple) and `selectionSize`, plus each
   // selection's `categoryName` (sport) and `tournamentName` (league).
@@ -290,8 +315,8 @@ export async function fetchAllRealBetList(
   for (;;) {
     const params: Record<string, string | number> = {
       ...baseParams,
-      pageNo,
-      pageSize: PAGE_SIZE,
+      [opts.pageParam || "pageNo"]: pageNo,
+      [opts.sizeParam || "pageSize"]: PAGE_SIZE,
     };
     if (opts.cacheBuster) params[opts.cacheBuster] = Date.now();
 
@@ -302,12 +327,12 @@ export async function fetchAllRealBetList(
     }
 
     const json = await httpGet(url.href);
-    const data = (
-      json as { data?: { entityList?: RawOrder[]; totalNum?: number } }
-    ).data;
-    const list = (data && data.entityList) || [];
-    if (total === null && data && typeof data.totalNum === "number")
-      total = data.totalNum;
+    const data = (json as Record<string, any>).data;
+    const list = (data && data[opts.listKey || "entityList"]) || [];
+    
+    if (total === null && data && typeof data[opts.totalKey || "totalNum"] === "number") {
+      total = data[opts.totalKey || "totalNum"];
+    }
 
     let added = 0;
     for (const item of list) {
@@ -356,15 +381,22 @@ export function createRealBetListProvider(
 ): Provider {
   async function fetchBets(progress?: (msg: string) => void): Promise<Bet[]> {
     // Same-origin browser transport: rides the logged-in session cookie.
-    return fetchAllRealBetList(
-      {
-        apiBase: opts.apiBase,
-        baseParams: opts.baseParams,
-        cacheBuster: opts.cacheBuster,
-      },
-      (url) => fetchJson(url),
-      progress,
-    );
+      return fetchAllRealBetList(
+        {
+          apiBase: opts.apiBase,
+          baseParams: opts.baseParams,
+          cacheBuster: opts.cacheBuster,
+          listKey: opts.listKey,
+          totalKey: opts.totalKey,
+          pageParam: opts.pageParam,
+          sizeParam: opts.sizeParam,
+          headers: opts.headers,
+        },
+        (url) => fetchJson(url, undefined, { 
+          headers: typeof opts.headers === "function" ? opts.headers() : opts.headers 
+        }),
+        progress,
+      );
   }
 
   return {

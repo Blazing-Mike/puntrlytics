@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/store";
-import { fmtMoney } from "@/lib/core";
+import { Money } from "@/components/Money";
 import dayjs from "dayjs";
 
+import Link from "next/link";
 import { ProviderLogo } from "@/components/ProviderLogo";
 
 export function HistorySidebar() {
@@ -12,33 +14,56 @@ export function HistorySidebar() {
   const setActiveId = useAppStore((state) => state.setActiveId);
   const deleteReport = useAppStore((state) => state.deleteReport);
 
-  const totalProfit = reports.reduce((s, r) => s + r.report.netProfit, 0);
-  const bestRoi = reports.length > 0 ? Math.max(...reports.map((r) => r.report.roi)) : 0;
-  const currency = reports.length > 0 ? reports[0].currency : "NGN";
+  // Aggregate stats from the latest report per provider only — a fresh import
+  // from a site supersedes earlier ones, so summing every stored entry would
+  // double-count the same account. (Also guards against duplicates persisted
+  // in localStorage before the store started replacing same-site reports.)
+  const latestByProvider = useMemo(() => {
+    const map = new Map<string, (typeof reports)[number]>();
+    for (const r of reports) {
+      const key = r.providerName.toLowerCase();
+      const cur = map.get(key);
+      if (!cur || new Date(r.savedAt).getTime() > new Date(cur.savedAt).getTime()) {
+        map.set(key, r);
+      }
+    }
+    return [...map.values()];
+  }, [reports]);
+
+  const totalProfit = latestByProvider.reduce((s, r) => s + r.report.netProfit, 0);
+  const bestRoi = latestByProvider.length > 0 ? Math.max(...latestByProvider.map((r) => r.report.roi)) : 0;
+  const currency = latestByProvider.length > 0 ? latestByProvider[0].currency : "NGN";
 
   return (
-    <aside className="w-[320px] flex flex-col border-r border-[var(--color-rule)] bg-[var(--color-ticket2)]">
+    <aside className="w-[320px] flex flex-col border-r border-rule bg-background">
+      {/* Brand & Home Link */}
+      <div className="flex h-16 items-center border-b border-rule bg-background px-5">
+        <Link href="/" className="font-display text-xl font-black uppercase tracking-wider text-gold hover:text-cyan transition-colors">
+          &larr; Betlytics
+        </Link>
+      </div>
+
       {/* Global Stats */}
-      <div className="flex flex-col gap-3 border-b border-[var(--color-rule)] bg-[var(--color-ticket)] p-5">
+      <div className="flex flex-col gap-3 border-b border-rule bg-background p-5">
         <div className="flex justify-between">
-          <span className="font-utility text-xs font-bold uppercase tracking-[1.4px] text-[var(--color-faint)]">
+          <span className="font-utility text-xs font-bold uppercase tracking-[1.4px] text-faint">
             Reports
           </span>
-          <span className="font-mono text-sm font-bold text-[var(--color-ink)]">{reports.length}</span>
+          <span className="font-mono text-sm font-bold text-ink">{latestByProvider.length}</span>
         </div>
         <div className="flex justify-between">
-          <span className="font-utility text-xs font-bold uppercase tracking-[1.4px] text-[var(--color-faint)]">
+          <span className="font-utility text-xs font-bold uppercase tracking-[1.4px] text-faint">
             Net Profit
           </span>
-          <span className={`font-mono text-sm font-bold ${totalProfit >= 0 ? "text-[var(--color-lime)]" : "text-[var(--color-rose)]"}`}>
-            {fmtMoney(totalProfit, currency, true)}
+          <span className={`font-mono text-sm font-bold ${totalProfit >= 0 ? "text-lime" : "text-rose"}`}>
+            <Money value={totalProfit} currency={currency} signed symbolClassName="text-[10px]" />
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="font-utility text-xs font-bold uppercase tracking-[1.4px] text-[var(--color-faint)]">
+          <span className="font-utility text-xs font-bold uppercase tracking-[1.4px] text-faint">
             Best ROI
           </span>
-          <span className={`font-mono text-sm font-bold ${bestRoi >= 0 ? "text-[var(--color-lime)]" : "text-[var(--color-rose)]"}`}>
+          <span className={`font-mono text-sm font-bold ${bestRoi >= 0 ? "text-lime" : "text-rose"}`}>
             {bestRoi >= 0 ? "+" : ""}{bestRoi.toFixed(1)}%
           </span>
         </div>
@@ -46,7 +71,7 @@ export function HistorySidebar() {
 
       {/* History List */}
       <div className="flex-1 overflow-y-auto">
-        <div className="sticky top-0 bg-[var(--color-ticket2)] px-4 py-3 font-utility text-[10px] font-bold uppercase tracking-[1.5px] text-[var(--color-faint)] backdrop-blur-md">
+        <div className="sticky top-0 bg-background px-4 py-3 font-utility text-[10px] font-bold uppercase tracking-[1.5px] text-faint backdrop-blur-md">
           History
         </div>
         <div className="flex flex-col">
@@ -57,8 +82,8 @@ export function HistorySidebar() {
             return (
               <div
                 key={r.id}
-                className={`group relative flex cursor-pointer items-center justify-between border-l-4 p-4 pr-10 transition-colors hover:bg-[var(--color-ticket)] ${isActive
-                  ? "border-[var(--color-gold)] bg-[var(--color-ticket)]"
+                className={`group relative flex cursor-pointer items-center justify-between border-l-4 p-2 py-5 pr-6 transition-colors ${isActive
+                  ? "border-gold bg-ticket"
                   : "border-transparent"
                   }`}
                 onClick={() => setActiveId(r.id)}
@@ -66,24 +91,24 @@ export function HistorySidebar() {
                 <div className="flex items-center gap-3">
                   <ProviderLogo providerName={r.providerName} size={40} />
                   <div className="flex flex-col">
-                    <span className="font-bold text-[var(--color-ink)]">{r.providerName}</span>
-                    <span className="font-utility text-[11px] text-[var(--color-faint)]">
+                    <span className="font-bold text-ink">{r.providerName}</span>
+                    <span className="font-utility text-[11px] text-faint">
                       {dayjs(r.savedAt).format("MMM D, YYYY h:mm A")}
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className={`font-mono text-sm font-bold ${isPos ? "text-[var(--color-lime)]" : "text-[var(--color-rose)]"}`}>
-                    {fmtMoney(r.report.netProfit, r.currency, true)}
+                  <span className={`font-mono text-sm font-bold ${isPos ? "text-lime" : "text-rose"}`}>
+                    <Money value={r.report.netProfit} currency={r.currency} signed symbolClassName="text-[10px]" />
                   </span>
-                  <span className={`font-mono text-xs ${r.report.roi >= 0 ? "text-[var(--color-lime)]" : "text-[var(--color-rose)]"}`}>
+                  <span className={`font-mono text-xs ${r.report.roi >= 0 ? "text-lime" : "text-rose"}`}>
                     {r.report.roi >= 0 ? "+" : ""}{r.report.roi.toFixed(1)}%
                   </span>
                 </div>
 
-                {/* Delete Button */}
+                {/* Delete Button — always visible on touch, revealed on hover for mouse users */}
                 <button
-                  className="absolute right-2 top-1/4 -translate-y-1/2 hidden h-6 w-6 items-center justify-center rounded-full bg-[var(--color-rose)] text-[#fff] shadow-lg hover:opacity-80 group-hover:flex focus-visible:flex"
+                  className="absolute right-1 top-1/6 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full border border-rule bg-ticket2 text-faint transition-colors hover:border-red-500 hover:bg-red-500 hover:text-white focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-cyan md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteReport(r.id);
@@ -91,7 +116,20 @@ export function HistorySidebar() {
                   title="Delete Report"
                   aria-label="Delete Report"
                 >
-                  ×
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                  </svg>
                 </button>
               </div>
             );
