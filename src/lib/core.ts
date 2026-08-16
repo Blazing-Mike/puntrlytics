@@ -176,7 +176,7 @@ export function fetchJson(
   }
   // Always log the exact URL we're about to request — makes it easy to spot a
   // stale bookmarklet (doubled path / double `_t`) in the console.
-  console.log("[Betlytics] GET " + url.href);
+  console.log("[Puntrlytics] GET " + url.href);
   const finalInit = Object.assign(
     { credentials: "include" as RequestCredentials },
     init || {}

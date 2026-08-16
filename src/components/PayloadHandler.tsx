@@ -22,7 +22,7 @@ export function PayloadHandler() {
         window.history.replaceState(null, "", window.location.pathname + window.location.search);
       }
     } catch (err) {
-      console.error("[Betlytics] Failed to parse payload from URL hash:", err);
+      console.error("[Puntrlytics] Failed to parse payload from URL hash:", err);
     }
   }, [setPayload]);
 

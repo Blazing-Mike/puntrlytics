@@ -49,7 +49,7 @@ export function ReportView({ reportData, showShare = true }: { reportData: Store
         style: { transform: "scale(1)" }
       });
       const link = document.createElement("a");
-      link.download = `Betlytics-Report-${providerName}-${dayjs().format("YYYY-MM-DD")}.png`;
+      link.download = `Puntrlytics-Report-${providerName}-${dayjs().format("YYYY-MM-DD")}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -213,9 +213,9 @@ export function ReportView({ reportData, showShare = true }: { reportData: Store
             style={{ backgroundColor: "#0f1218" }}
           >
             <div className="flex items-center justify-between">
-              <span className="font-display text-2xl font-black uppercase tracking-wider text-gold">
-                Betlytics
-              </span>
+            <span className="font-display text-2xl font-black uppercase tracking-wider text-gold">
+              Puntrlytics
+            </span>
               <span className="rounded-full border border-rule bg-ticket px-3 py-1 font-utility text-xs font-bold uppercase tracking-wider text-faint">
                 {providerName}
               </span>
@@ -255,7 +255,7 @@ export function ReportView({ reportData, showShare = true }: { reportData: Store
                   : ""}
               </span>
               <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-gold">
-                100% in-browser • Betlytics
+                100% in-browser • Puntrlytics
               </span>
             </div>
           </div>

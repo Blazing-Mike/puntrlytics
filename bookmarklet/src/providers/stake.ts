@@ -54,7 +54,7 @@ query SportSportList($limit: Int!, $offset: Int!, $name: String, $status: [Sport
 // bootstrapped an authenticated session (e.g. on /my-bets/sports or settings).
 // Running the bookmarklet on an idle page therefore usually gets a stale or
 // absent token -> "You are not allowed to do that." So we try, in order:
-//   1. known storage keys (incl. the manual override betlytics_stake_token)
+//   1. known storage keys (incl. the manual override puntrlytics_stake_token)
 //   2. a scan of every storage value for JWT-shaped / long opaque strings
 //   3. sniffing the current page's OWN GraphQL traffic for a live token
 //   4. opening a same-origin popup on /my-bets/sports — the route where a
@@ -66,6 +66,8 @@ query SportSportList($limit: Int!, $offset: Int!, $name: String, $status: [Sport
 
 function readStoredTokens(): string[] {
   const keys = [
+    "puntrlytics_stake_token",
+    // Legacy key — keep reading it so overrides set under the old name still work.
     "betlytics_stake_token",
     "token",
     "access_token",
@@ -236,8 +238,8 @@ function captureTokenFromPopup(timeoutMs = 20000): Promise<string> {
     const timer = setTimeout(() => {
       console.warn(
         graphqlSeen > 0
-          ? "[Betlytics] Refresh window made GraphQL calls but no x-access-token header was seen."
-          : "[Betlytics] Refresh window did not boot the app (or it made no GraphQL requests).",
+          ? "[Puntrlytics] Refresh window made GraphQL calls but no x-access-token header was seen."
+          : "[Puntrlytics] Refresh window did not boot the app (or it made no GraphQL requests).",
       );
       finish("");
     }, timeoutMs);
@@ -245,14 +247,14 @@ function captureTokenFromPopup(timeoutMs = 20000): Promise<string> {
     try {
       popup = window.open(
         window.location.origin + "/my-bets/sports",
-        "betlytics_refresh",
+        "puntrlytics_refresh",
         "width=480,height=640,left=-2000,top=0",
       );
     } catch {
       // ignore
     }
     if (!popup) {
-      console.warn("[Betlytics] Could not open the refresh window (popup blocked?).");
+      console.warn("[Puntrlytics] Could not open the refresh window (popup blocked?).");
       finish("");
       return;
     }
@@ -266,7 +268,7 @@ function captureTokenFromPopup(timeoutMs = 20000): Promise<string> {
 
     popup.addEventListener("load", () => {
       try {
-        console.log("[Betlytics] Refresh window loaded: " + popup.location.href);
+        console.log("[Puntrlytics] Refresh window loaded: " + popup.location.href);
       } catch {
         // ignore
       }
@@ -500,13 +502,13 @@ export const stakeProvider: Provider = {
     for (const token of candidates) {
       try {
         console.log(
-          `[Betlytics] Trying Stake token: ${token.slice(0, 8)}… (${token.length} chars)`,
+          `[Puntrlytics] Trying Stake token: ${token.slice(0, 8)}… (${token.length} chars)`,
         );
         return await fetchAll(token);
       } catch (err) {
         lastError = err;
         if (!isPermissionError(err)) throw err;
-        console.warn(`[Betlytics] Token ${token.slice(0, 8)}… rejected.`);
+        console.warn(`[Puntrlytics] Token ${token.slice(0, 8)}… rejected.`);
       }
     }
 
@@ -525,7 +527,7 @@ export const stakeProvider: Provider = {
     }
     if (fresh) {
       console.log(
-        `[Betlytics] Fresh Stake token: ${fresh.slice(0, 8)}… (${fresh.length} chars)`,
+        `[Puntrlytics] Fresh Stake token: ${fresh.slice(0, 8)}… (${fresh.length} chars)`,
       );
       try {
         return await fetchAll(fresh);
@@ -536,10 +538,10 @@ export const stakeProvider: Provider = {
     }
 
     console.warn(
-      "[Betlytics] Could not obtain a valid Stake x-access-token. Open " +
+      "[Puntrlytics] Could not obtain a valid Stake x-access-token. Open " +
         'DevTools → Network → filter "graphql" → _api/graphql → request ' +
         "headers, copy the x-access-token value, then run:\n" +
-        '  localStorage.setItem("betlytics_stake_token", "<token>")\n' +
+        '  localStorage.setItem("puntrlytics_stake_token", "<token>")\n' +
         "and re-run the bookmarklet.",
     );
     throw lastError instanceof Error

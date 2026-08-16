@@ -38,7 +38,7 @@ export default function DashboardPage() {
           <div className="mb-4 text-4xl">∅</div>
           <h2 className="mb-4 text-xl font-bold text-ink">No saved reports yet</h2>
           <p className="text-faint leading-relaxed mb-6">
-            Open <b>SportyBet</b>, <b>MSport</b>, <b>Stake</b> or <b>football.com</b>, run the Betlytics bookmarklet, and your report will appear here.
+            Open <b>SportyBet</b>, <b>MSport</b>, <b>Stake</b> or <b>football.com</b>, run the Puntrlytics bookmarklet, and your report will appear here.
           </p>
           <Link href="/" className="inline-block rounded-full bg-ticket2 px-6 py-2.5 font-utility text-sm font-bold uppercase tracking-wider text-ink transition hover:bg-rule hover:text-cyan">
             &larr; Back to home

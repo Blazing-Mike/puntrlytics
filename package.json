@@ -10,6 +10,7 @@
     "build:bookmarklet": "cd bookmarklet && npm install && node build.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "dayjs": "^1.11.21",
     "html-to-image": "^1.11.13",
     "next": "16.3.1",

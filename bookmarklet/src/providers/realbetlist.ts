@@ -368,7 +368,7 @@ export async function fetchAllRealBetList(
 
   if (total !== null && bets.length < total) {
     console.warn(
-      `[Betlytics] Pagination ended early: fetched ${bets.length} of ~${total} bets. ` +
+      `[Puntrlytics] Pagination ended early: fetched ${bets.length} of ~${total} bets. ` +
         "The server may cap pageSize or pagination may have stalled — see Network tab.",
     );
   }

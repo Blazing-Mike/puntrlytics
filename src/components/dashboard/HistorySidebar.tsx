@@ -1,18 +1,41 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, type StoredReport } from "@/lib/store";
 import { Money } from "@/components/Money";
 import dayjs from "dayjs";
 
 import Link from "next/link";
 import { ProviderLogo } from "@/components/ProviderLogo";
 
-export function HistorySidebar() {
-  const reports = useAppStore((state) => state.reports);
-  const activeId = useAppStore((state) => state.activeId);
-  const setActiveId = useAppStore((state) => state.setActiveId);
-  const deleteReport = useAppStore((state) => state.deleteReport);
+// The dashboard renders this from the real store (no props). The demo page
+// passes its own sample reports so it renders the exact same sidebar with
+// demo data — never touching the store.
+interface HistorySidebarProps {
+  reports?: StoredReport[];
+  activeId?: string | null;
+  onSelect?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  /** Show the "← Puntrlytics" brand bar. Hidden on the demo page, which has its own header. */
+  showBrand?: boolean;
+}
+
+export function HistorySidebar({
+  reports: propReports,
+  activeId: propActiveId,
+  onSelect,
+  onDelete,
+  showBrand = true,
+}: HistorySidebarProps = {}) {
+  const storeReports = useAppStore((state) => state.reports);
+  const storeActiveId = useAppStore((state) => state.activeId);
+  const storeSetActiveId = useAppStore((state) => state.setActiveId);
+  const storeDeleteReport = useAppStore((state) => state.deleteReport);
+
+  const reports = propReports ?? storeReports;
+  const activeId = propActiveId !== undefined ? propActiveId : storeActiveId;
+  const selectReport = onSelect ?? storeSetActiveId;
+  const removeReport = onDelete ?? storeDeleteReport;
 
   // Aggregate stats from the latest report per provider only — a fresh import
   // from a site supersedes earlier ones, so summing every stored entry would
@@ -37,11 +60,13 @@ export function HistorySidebar() {
   return (
     <aside className="w-[320px] flex flex-col border-r border-rule bg-background">
       {/* Brand & Home Link */}
-      <div className="flex h-16 items-center border-b border-rule bg-background px-5">
-        <Link href="/" className="font-display text-xl font-black uppercase tracking-wider text-gold hover:text-cyan transition-colors">
-          &larr; Betlytics
-        </Link>
-      </div>
+      {showBrand && (
+        <div className="flex h-16 items-center border-b border-rule bg-background px-5">
+          <Link href="/" className="font-display text-xl font-black uppercase tracking-wider text-gold hover:text-cyan transition-colors">
+            &larr; Puntrlytics
+          </Link>
+        </div>
+      )}
 
       {/* Global Stats */}
       <div className="flex flex-col gap-3 border-b border-rule bg-background p-5">
@@ -86,7 +111,7 @@ export function HistorySidebar() {
                   ? "border-gold bg-ticket"
                   : "border-transparent"
                   }`}
-                onClick={() => setActiveId(r.id)}
+                onClick={() => selectReport(r.id)}
               >
                 <div className="flex items-center gap-3">
                   <ProviderLogo providerName={r.providerName} size={40} />
@@ -111,7 +136,7 @@ export function HistorySidebar() {
                   className="absolute right-1 top-1/6 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full border border-rule bg-ticket2 text-faint transition-colors hover:border-red-500 hover:bg-red-500 hover:text-white focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-cyan md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
                   onClick={(e) => {
                     e.stopPropagation();
-                    deleteReport(r.id);
+                    removeReport(r.id);
                   }}
                   title="Delete Report"
                   aria-label="Delete Report"

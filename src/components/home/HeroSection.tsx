@@ -16,7 +16,7 @@ export function HeroSection({ activeProviderUrl }: { activeProviderUrl: string }
         Your Bookie Knows Your Numbers. Now You Do Too.
       </h1>
       <p className="mx-auto max-w-3xl text-[17px] leading-relaxed text-faint">
-        Betlytics turns your scattered bet history into a real profit/loss dashboard — win rate, ROI, biggest wins and losses, broken down by sport and stake.
+        Puntrlytics turns your scattered bet history into a real profit/loss dashboard — win rate, ROI, biggest wins and losses, broken down by sport and stake.
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">

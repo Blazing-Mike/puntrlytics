@@ -15,7 +15,7 @@ export function runBookmarklet(provider: Provider): void {
   // Version marker — check the console: if this line is missing (or shows an
   // older version), the browser is running a stale bookmarklet.
   console.log(
-    "[Betlytics] v" + BA_VERSION + " — " + provider.name + " (auto-detect)",
+    "[Puntrlytics] v" + BA_VERSION + " — " + provider.name + " (auto-detect)",
   );
 
   // Floating progress toast on the site we're running against.
@@ -48,7 +48,7 @@ export function runBookmarklet(provider: Provider): void {
       .replace(/"/g, "&quot;");
 
   overlay.innerHTML =
-    '<div style="font-weight:700;margin-bottom:4px;color:#41d484">⚡ Betlytics — ' +
+    '<div style="font-weight:700;margin-bottom:4px;color:#41d484">⚡ Puntrlytics — ' +
     esc(provider.name) +
     ' <span style="font-weight:400;opacity:.7">v' +
     BA_VERSION +
@@ -64,7 +64,7 @@ export function runBookmarklet(provider: Provider): void {
     overlay.remove();
   };
   const fail = (err: unknown): void => {
-    console.error("[Betlytics]", err);
+    console.error("[Puntrlytics]", err);
     const e = err instanceof Error ? err : new Error(String(err));
     msg("❌ " + e.message);
     window.setTimeout(cleanup, 12000);

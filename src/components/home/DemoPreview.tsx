@@ -6,7 +6,7 @@ export function DemoPreview() {
     <div className="mx-auto mt-12 max-w-[1000px] overflow-hidden rounded-xl border border-rule bg-blacktop shadow-[0_30px_80px_rgba(0,0,0,.35)]">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule bg-ticket2/70 px-4 py-3 sm:flex-nowrap">
         <div className="flex min-w-0 flex-wrap items-center gap-3 sm:flex-nowrap">
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 items-center ">
             {["SportyBet", "MSport", "Stake.com", "football.com"].map((name) => (
               <ProviderLogo key={name} providerName={name} size={24} />
             ))}
