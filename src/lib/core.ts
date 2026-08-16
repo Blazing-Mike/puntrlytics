@@ -3,7 +3,7 @@
 
 // Bump this whenever bookmarklet behavior changes so users can confirm they
 // reinstalled the latest build (it's printed to the console + toast).
-export const BA_VERSION = "2.3.0";
+export const BA_VERSION = "1.0.0";
 
 export interface Bet {
   betId: string;
