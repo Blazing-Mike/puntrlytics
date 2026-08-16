@@ -31,6 +31,7 @@ export function DemoPreview() {
             fill
             className="object-cover object-top opacity-90"
             unoptimized
+            priority
           />
         </div>
         <div className="absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-blacktop to-transparent" />

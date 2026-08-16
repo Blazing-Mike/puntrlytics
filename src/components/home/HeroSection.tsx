@@ -12,7 +12,7 @@ export function HeroSection({ activeProviderUrl }: { activeProviderUrl: string }
         </span>
         100% private · no account · no upload
       </div>
-      <h1 className="mb-5 font-display text-[clamp(38px,10vw,60px)] font-black uppercase  max-[820px]:text-[clamp(32px,10vw,58px)] leading-none">
+      <h1 className="mb-5 font-display text-[clamp(38px,10vw,60px)] font-black uppercase text-balance max-[820px]:text-[clamp(32px,10vw,58px)] leading-none">
         Your Bookie Knows Your Numbers. Now You Do Too.
       </h1>
       <p className="mx-auto max-w-3xl text-[17px] leading-relaxed text-faint">
