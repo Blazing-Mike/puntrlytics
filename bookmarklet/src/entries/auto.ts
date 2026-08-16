@@ -9,7 +9,7 @@ import { detectProvider } from "../providers/detect";
 const provider = detectProvider();
 if (!provider) {
   const msg =
-    "[Betlytics] Unsupported site: " +
+    "[Puntrlytics] Unsupported site: " +
     (typeof location !== "undefined" ? location.hostname : "unknown") +
     "\n\nThis bookmarklet works on SportyBet and football.com. " +
     "Open one of those sites (logged in) and run it again.";

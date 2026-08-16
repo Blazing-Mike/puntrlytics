@@ -35,8 +35,17 @@ export const useAppStore = create<AppState>()(
             currency: payload.currency || "NGN",
             savedAt: payload.savedAt || new Date().toISOString(),
           };
+          // One report per provider. The bookmarklet reads the account's full
+          // bet history on every run, so a fresh import from a site is a
+          // superset of any earlier report from it — replace the old one
+          // instead of stacking, which would double-count net profit in the
+          // global stats.
+          const key = newReport.providerName.toLowerCase();
+          const others = state.reports.filter(
+            (r) => r.providerName.toLowerCase() !== key,
+          );
           return {
-            reports: [newReport, ...state.reports].slice(0, 50), // keep last 50
+            reports: [newReport, ...others].slice(0, 50), // keep last 50
             activeId: newReport.id,
           };
         }),

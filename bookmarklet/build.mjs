@@ -21,16 +21,18 @@ const HOST =
   process.env.BOOKMARKLET_HOST ||
   process.env.VERCEL_PROJECT_PRODUCTION_URL ||
   process.env.VERCEL_URL ||
-  "";
+  "http://localhost:3000";
 const formattedHost = HOST
   ? (HOST.startsWith("http") ? HOST : `https://${HOST}`).replace(/\/+$/, "")
   : "";
 
 const bookmarklets = [];
 const PROVIDER_NAMES = {
-  auto: "SportyBet / football.com",
+  auto: "SportyBet / MSport / Stake / football.com",
   football: "football.com",
   sportybet: "SportyBet",
+  msport: "MSport",
+  stake: "Stake.com"
 };
 
 for (const f of entries) {
