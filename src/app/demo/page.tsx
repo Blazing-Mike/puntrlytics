@@ -40,6 +40,7 @@ export default function DemoPage() {
 
   const [reports, setReports] = useState<StoredReport[]>(initialReports);
   const [activeId, setActiveId] = useState("demo-sportybet");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const activeReport = reports.find((r) => r.id === activeId) || reports[0];
 
@@ -66,12 +67,17 @@ export default function DemoPage() {
       </header>
 
       {mounted ? (
-        <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 relative">
           <HistorySidebar
             reports={reports}
             activeId={activeId}
             showBrand={false}
-            onSelect={setActiveId}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+            onSelect={(id) => {
+              setActiveId(id);
+              setIsSidebarOpen(false);
+            }}
             onDelete={(id) => {
               setReports((prev) => prev.filter((r) => r.id !== id));
               // If the deleted report was active, fall back to the first remaining one.
@@ -81,7 +87,7 @@ export default function DemoPage() {
             }}
           />
           <main className="min-w-0 flex-1">
-            <ReportView reportData={activeReport} showShare={false} />
+            <ReportView reportData={activeReport} showShare={false} onToggleSidebar={() => setIsSidebarOpen(true)} />
           </main>
         </div>
       ) : null}

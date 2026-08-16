@@ -49,11 +49,11 @@ export default function Home() {
           <MobileSteps copied={copied} onCopy={handleCopy} />
         </div>
       </main>
-      <footer className="border-t border-rule/60">
+      <footer className="">
         <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-6 py-8 text-center sm:flex-row sm:text-left max-[520px]:px-4">
           <span className="font-display text-sm font-black uppercase tracking-wider text-gold">
-          Puntrlytics
-        </span>
+            Puntrlytics
+          </span>
           <p className="font-utility text-[11px] uppercase tracking-[1.2px] text-faint">
             Your data never leaves your device — no account, no upload
           </p>

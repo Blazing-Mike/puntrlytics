@@ -18,6 +18,8 @@ interface HistorySidebarProps {
   onDelete?: (id: string) => void;
   /** Show the "← Puntrlytics" brand bar. Hidden on the demo page, which has its own header. */
   showBrand?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function HistorySidebar({
@@ -26,6 +28,8 @@ export function HistorySidebar({
   onSelect,
   onDelete,
   showBrand = true,
+  isOpen = false,
+  onClose,
 }: HistorySidebarProps = {}) {
   const storeReports = useAppStore((state) => state.reports);
   const storeActiveId = useAppStore((state) => state.activeId);
@@ -58,15 +62,35 @@ export function HistorySidebar({
   const currency = latestByProvider.length > 0 ? latestByProvider[0].currency : "NGN";
 
   return (
-    <aside className="w-[320px] flex flex-col border-r border-rule bg-background">
-      {/* Brand & Home Link */}
-      {showBrand && (
-        <div className="flex h-16 items-center border-b border-rule bg-background px-5">
-          <Link href="/" className="font-display text-xl font-black uppercase tracking-wider text-gold hover:text-cyan transition-colors">
-            &larr; Puntrlytics
-          </Link>
-        </div>
+    <>
+      {/* Mobile overlay backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity md:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
       )}
+
+      <aside className={`w-[320px] flex flex-col border-r border-rule bg-background max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:transition-transform max-md:duration-300 ${isOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"}`}>
+        {/* Brand & Home Link */}
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-rule bg-background px-5">
+          {showBrand ? (
+            <Link href="/" className="font-display text-xl font-black uppercase tracking-wider text-gold hover:text-cyan transition-colors">
+              &larr; Puntrlytics
+            </Link>
+          ) : (
+            <div className="font-display text-xl font-black uppercase tracking-wider text-gold">History</div>
+          )}
+          
+          <button 
+            onClick={onClose} 
+            className="flex h-8 w-8 items-center justify-center rounded-md text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan md:hidden"
+            aria-label="Close sidebar"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
 
       {/* Global Stats */}
       <div className="flex flex-col gap-3 border-b border-rule bg-background p-5">
@@ -162,5 +186,6 @@ export function HistorySidebar({
         </div>
       </div>
     </aside>
+    </>
   );
 }

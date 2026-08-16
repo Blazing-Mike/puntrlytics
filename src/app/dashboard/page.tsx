@@ -9,6 +9,9 @@ import { ReportView } from "@/components/dashboard/ReportView";
 export default function DashboardPage() {
   const reports = useAppStore((state) => state.reports);
   const activeId = useAppStore((state) => state.activeId);
+  const setActiveId = useAppStore((state) => state.setActiveId);
+  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const activeReport = reports.find((r) => r.id === activeId);
 
@@ -49,16 +52,30 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden ">
+    <div className="flex h-screen overflow-hidden relative">
       {/* Sidebar for History */}
-      <HistorySidebar />
+      <HistorySidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onSelect={(id) => {
+          setActiveId(id);
+          setIsSidebarOpen(false);
+        }}
+      />
 
       {/* Main Report View */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto min-w-0">
         {activeReport ? (
-          <ReportView reportData={activeReport} />
+          <ReportView reportData={activeReport} onToggleSidebar={() => setIsSidebarOpen(true)} />
         ) : (
-          <div className="flex h-full items-center justify-center text-faint">
+          <div className="flex h-full items-center justify-center text-faint relative">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="absolute top-4 left-4 md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+              aria-label="Open sidebar"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="18" y2="18"/></svg>
+            </button>
             Select a report from the history to view it.
           </div>
         )}

@@ -19,7 +19,7 @@ import {
   Line
 } from "recharts";
 
-export function ReportView({ reportData, showShare = true }: { reportData: StoredReport; showShare?: boolean }) {
+export function ReportView({ reportData, showShare = true, onToggleSidebar }: { reportData: StoredReport; showShare?: boolean; onToggleSidebar?: () => void }) {
   const { report, providerName, currency, savedAt } = reportData;
 
   const isPos = report.netProfit >= 0;
@@ -63,18 +63,29 @@ export function ReportView({ reportData, showShare = true }: { reportData: Store
   return (
     <div className="flex h-full flex-col font-sans text-ink relative">
       {/* Header */}
-      <header className="flex shrink-0 items-center justify-between border-b border-rule bg-background/80 px-8 py-5 backdrop-blur-md sticky top-0 z-10">
-        <div className="flex items-center gap-4">
-          <ProviderLogo providerName={providerName} size={48} />
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-black uppercase text-gold">Performance Report</h1>
-            <p className="font-utility text-xs tracking-wider text-ink/80">
-              {providerName} • Generated {dayjs(savedAt).format("MMM D, YYYY h:mm A")}
+      <header className="flex shrink-0 items-center justify-between border-b border-rule bg-background/80 px-4 py-3 md:px-8 md:py-5 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-3 md:gap-4">
+          {onToggleSidebar && (
+            <button 
+              onClick={onToggleSidebar}
+              className="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+              aria-label="Toggle sidebar"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="18" y2="18"/></svg>
+            </button>
+          )}
+          <div className="hidden sm:block">
+            <ProviderLogo providerName={providerName} size={48} />
+          </div>
+          <div className="flex flex-col gap-0.5 md:gap-1">
+            <h1 className="text-lg md:text-2xl font-black uppercase text-gold leading-none">Performance</h1>
+            <p className="font-utility text-[10px] md:text-xs tracking-wider text-ink/80 truncate max-w-[140px] md:max-w-none">
+              {providerName} • Gen: {dayjs(savedAt).format("MMM D")}
             </p>
           </div>
         </div>
-        <div className="flex flex-col items-end text-right gap-2">
-          <div className="flex flex-col items-end">
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex flex-col items-end text-right">
             <span className="font-utility text-xs tracking-wider text-faint uppercase">
               Period
             </span>
@@ -86,20 +97,24 @@ export function ReportView({ reportData, showShare = true }: { reportData: Store
             <button
               onClick={handleShare}
               disabled={isSharing}
-              className="rounded bg-cyan/20 px-3 py-1.5 font-bold text-cyan text-xs uppercase tracking-wider hover:bg-cyan/30 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+              className="rounded bg-cyan/20 px-3 py-1.5 md:px-4 md:py-2 font-bold text-cyan text-[10px] md:text-xs uppercase tracking-wider hover:bg-cyan/30 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan whitespace-nowrap"
             >
-              {isSharing ? "Generating..." : "Share Report"}
+              {isSharing ? "Gen..." : "Share"}
             </button>
           )}
         </div>
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="p-8 space-y-8 min-h-full">
+        <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-full">
           {/* Top KPIs */}
           <section className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-            <StatCard title="Net Profit" value={<Money value={report.netProfit} currency={currency} signed />} colorClass={isPos ? "text-lime" : "text-rose"} />
-            <StatCard title="ROI" value={`${isRoiPos ? "+" : ""}${report.roi.toFixed(1)}%`} colorClass={isRoiPos ? "text-lime" : "text-rose"} />
+            <div className="col-span-2 md:col-span-1">
+              <StatCard title="Net Profit" value={<Money value={report.netProfit} currency={currency} signed />} colorClass={isPos ? "text-lime" : "text-rose"} />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <StatCard title="ROI" value={`${isRoiPos ? "+" : ""}${report.roi.toFixed(1)}%`} colorClass={isRoiPos ? "text-lime" : "text-rose"} />
+            </div>
             <StatCard title="Win Rate" value={`${report.winRate.toFixed(1)}%`} />
             <StatCard title="Total Bets" value={report.totalBets.toLocaleString()} />
             <StatCard title="Settled Bets" value={report.settledTotal.toLocaleString()} />
