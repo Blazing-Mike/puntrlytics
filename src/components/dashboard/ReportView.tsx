@@ -66,12 +66,12 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
       <header className="flex shrink-0 items-center justify-between border-b border-rule bg-background/80 px-4 py-3 md:px-8 md:py-5 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-3 md:gap-4">
           {onToggleSidebar && (
-            <button 
+            <button
               onClick={onToggleSidebar}
               className="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
               aria-label="Toggle sidebar"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="18" y2="18"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="12" y2="12" /><line x1="3" x2="21" y1="6" y2="6" /><line x1="3" x2="21" y1="18" y2="18" /></svg>
             </button>
           )}
           <div className="hidden sm:block">
@@ -131,7 +131,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
               {report.biggestWin && report.biggestWin.payout > 0 && (
                 <StatCard
                   title="Biggest Win"
-                  value={<Money value={report.biggestWin.payout} currency={currency} signed />}
+                  value={<Money value={report.biggestWin.payout} currency={currency} />}
                   colorClass="text-lime"
                   subtitle={`Stake: ${fmtMoney(report.biggestWin.stake, currency)} • ${dayjs(report.biggestWin.date).format("MMM D, YYYY")}`}
                 />
@@ -139,7 +139,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
               {report.biggestLoss && report.biggestLoss.stake > 0 && (
                 <StatCard
                   title="Biggest Loss"
-                  value={<Money value={-report.biggestLoss.stake} currency={currency} signed />}
+                  value={<Money value={-report.biggestLoss.stake} currency={currency} />}
                   colorClass="text-rose"
                   subtitle={`Stake: ${fmtMoney(report.biggestLoss.stake, currency)} • ${dayjs(report.biggestLoss.date).format("MMM D, YYYY")}`}
                 />
@@ -228,9 +228,9 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
             style={{ backgroundColor: "#0f1218" }}
           >
             <div className="flex items-center justify-between">
-            <span className="font-display text-2xl font-black uppercase tracking-wider text-gold">
-              Puntrlytics
-            </span>
+              <span className="font-display text-2xl font-black uppercase tracking-wider text-gold">
+                Puntrlytics
+              </span>
               <span className="rounded-full border border-rule bg-ticket px-3 py-1 font-utility text-xs font-bold uppercase tracking-wider text-faint">
                 {providerName}
               </span>
