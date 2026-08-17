@@ -84,7 +84,7 @@ export default function DemoPage() {
               );
             }}
           />
-          <main className="min-w-0 flex-1">
+          <main className="min-w-0 flex-1 overflow-y-auto">
             <ReportView reportData={activeReport} showShare={false} onToggleSidebar={() => setIsSidebarOpen(true)} />
           </main>
         </div>

@@ -65,13 +65,31 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
         backgroundColor: "#0a0d12",
         style: { transform: "scale(1)" }
       });
-      const link = document.createElement("a");
-      link.download = `Puntrlytics-Report-${providerName}-${dayjs().format("YYYY-MM-DD")}.png`;
-      link.href = dataUrl;
-      link.click();
+
+      const fileName = `Puntrlytics-Report-${providerName}-${dayjs().format("YYYY-MM-DD")}.png`;
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], fileName, { type: "image/png" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: "Puntrlytics Report",
+          text: `Check out my ${providerName} betting performance on Puntrlytics!`,
+          files: [file]
+        });
+      } else {
+        // Fallback to traditional download if the browser doesn't support file sharing
+        const link = document.createElement("a");
+        link.download = fileName;
+        link.href = dataUrl;
+        link.click();
+      }
     } catch (err) {
       console.error("Failed to share report:", err);
-      alert("Failed to generate report image.");
+      // Ignore abort errors from the user canceling the share dialog
+      if (err instanceof Error && err.name !== "AbortError") {
+        alert("Failed to generate or share the report image.");
+      }
     } finally {
       setIsSharing(false);
     }
