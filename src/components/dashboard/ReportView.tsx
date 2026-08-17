@@ -80,7 +80,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
           <div className="flex flex-col gap-0.5 md:gap-1">
             <h1 className="text-lg md:text-2xl font-black uppercase text-gold leading-none">Performance</h1>
             <p className="font-utility text-[10px] md:text-xs tracking-wider text-ink/80 truncate max-w-[140px] md:max-w-none">
-              {providerName} • Gen: {dayjs(savedAt).format("MMM D")}
+              {providerName} • Generated: {dayjs(savedAt).format("MMM D")}
             </p>
           </div>
         </div>
