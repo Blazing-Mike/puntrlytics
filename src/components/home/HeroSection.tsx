@@ -22,7 +22,7 @@ export function HeroSection({ activeProviderUrl }: { activeProviderUrl: string }
       <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
         <BookmarkletLink
           url={activeProviderUrl}
-          className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-lime px-8 py-[14px] text-[17px] font-bold leading-none text-blacktop no-underline shadow-[0_16px_38px_rgba(65,212,132,.25)] transition hover:-translate-y-0.5 hover:bg-[#54dd8e] hover:shadow-[0_22px_44px_rgba(65,212,132,.35)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan motion-reduce:transition-none max-[520px]:w-full"
+          className="group inline-flex items-center justify-center gap-2.5 rounded-lg bg-lime px-8 py-3.5 text-[17px] font-bold leading-none text-blacktop no-underline shadow-[0_16px_38px_rgba(65,212,132,.25)] transition hover:-translate-y-0.5 hover:bg-[#54dd8e] hover:shadow-[0_22px_44px_rgba(65,212,132,.35)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan motion-reduce:transition-none max-[520px]:w-full"
         >
           Analyze my bets
 

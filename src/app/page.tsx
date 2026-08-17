@@ -36,9 +36,9 @@ export default function Home() {
           Dashboard
         </a>
       </header>
-      <main className="px-[18px] pt-4 leading-relaxed max-[520px]:px-3 max-[520px]:pb-11 max-[520px]:pt-2">
+      <main className="px-4 pt-4 leading-relaxed max-[520px]:px-3 max-[520px]:pb-6 max-[520px]:pt-2">
         <div className="container mx-auto">
-          <div className="mb-[18px] pb-4">
+          <div className="mb-6 pb-6">
             <HeroSection activeProviderUrl={activeProvider?.url || "#"} />
             <DemoPreview />
           </div>
@@ -50,11 +50,11 @@ export default function Home() {
         </div>
       </main>
       <footer className="">
-        <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-6 py-8 text-center sm:flex-row sm:text-left max-[520px]:px-4">
+        <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-6 py-4 text-center sm:flex-row sm:text-left max-[520px]:px-4">
           <span className="font-display text-sm font-black uppercase tracking-wider text-gold">
             Puntrlytics
           </span>
-          <p className="font-utility text-[11px] uppercase tracking-[1.2px] text-faint">
+          <p className="font-utility text-[11px] uppercase tracking-[1.2px] text-ink">
             Your data never leaves your device — no account, no upload
           </p>
           <span className="font-mono text-[11px] text-faint">

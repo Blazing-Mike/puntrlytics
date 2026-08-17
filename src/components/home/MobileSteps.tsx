@@ -18,7 +18,7 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
   }, []);
 
   return (
-    <div className="my-[18px] hidden rounded-lg border border-rule bg-ticket/90 p-5 max-[820px]:block">
+    <div id="mobile-steps" className="my-4 hidden rounded-lg border border-rule bg-ticket/90 p-5 max-[820px]:block">
       <h2 className="mb-1 font-utility text-xs uppercase tracking-[1.5px] text-faint">
         📱 On a phone? No bookmarks bar — install it in a tap
       </h2>

@@ -12,10 +12,10 @@ export function DemoPreview() {
             ))}
           </div>
           <span className="truncate font-mono text-[11px] uppercase tracking-[1px] text-faint">
-            slip № <span className="font-bold">SportyBet · MSport · Stake.com · football.com</span> — sample report
+            <span className="font-bold">SportyBet · MSport · Stake.com · football.com</span>
           </span>
         </div>
-        <span className="flex shrink-0 items-center gap-2">
+        <span className="flex shrink-0 items-center gap-2 max-md:hidden">
           <span className="h-3 w-3 rounded-full bg-rose/80"></span>
           <span className="h-3 w-3 rounded-full bg-gold/80"></span>
           <span className="h-3 w-3 rounded-full bg-lime/80"></span>

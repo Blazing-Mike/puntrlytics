@@ -30,6 +30,15 @@ export function BookmarkletLink({
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+
+    if (window.innerWidth <= 820) {
+      const mobileSteps = document.getElementById("mobile-steps");
+      if (mobileSteps) {
+        mobileSteps.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return;
+    }
+
     setToast(
       "Drag this button to your bookmarks bar. If it's hidden, press Ctrl+Shift+B (Windows) or Cmd+Shift+B (Mac) to show it.",
     );
