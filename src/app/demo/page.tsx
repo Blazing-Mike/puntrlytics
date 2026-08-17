@@ -54,14 +54,12 @@ export default function DemoPage() {
           Puntrlytics
         </Link>
         <div className="flex items-center gap-4">
-          <span className="rounded-full border border-gold/50 bg-gold/10 px-3 py-1 font-utility text-[10px] font-bold uppercase tracking-wider text-gold">
-            Sample data
-          </span>
+
           <Link
             href="/dashboard"
-            className="font-utility text-sm font-bold uppercase tracking-wider text-ink transition hover:text-cyan"
+            className="font-utility text-sm font-semibold uppercase tracking-wider text-ink transition hover:text-cyan"
           >
-            Open Dashboard →
+            Open Dashboard
           </Link>
         </div>
       </header>
