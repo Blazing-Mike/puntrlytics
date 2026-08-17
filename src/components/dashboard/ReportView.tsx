@@ -139,7 +139,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
               {report.biggestLoss && report.biggestLoss.stake > 0 && (
                 <StatCard
                   title="Biggest Loss"
-                  value={<Money value={-report.biggestLoss.stake} currency={currency} />}
+                  value={<Money value={report.biggestLoss.stake} currency={currency} />}
                   colorClass="text-rose"
                   subtitle={`Stake: ${fmtMoney(report.biggestLoss.stake, currency)} • ${dayjs(report.biggestLoss.date).format("MMM D, YYYY")}`}
                 />
@@ -322,7 +322,7 @@ function BreakdownTable({ title, data, currency }: { title: string; data: Breakd
               <th className="px-4 py-3 font-normal uppercase tracking-wider text-ink">Category</th>
               <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">Bets</th>
               <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">Stake</th>
-              <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">Profit</th>
+              <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">Profit/Loss</th>
               <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">ROI</th>
             </tr>
           </thead>
@@ -333,9 +333,11 @@ function BreakdownTable({ title, data, currency }: { title: string; data: Breakd
                 <tr key={i} className="border-b border-rule/20 last:border-0 hover:bg-ticket2/30">
                   <td className="px-4 py-3 text-ink">{row.label}</td>
                   <td className="px-4 py-3 text-right">{row.total}</td>
-                  <td className="px-4 py-3 text-right">{fmtMoney(row.stake, currency)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Money value={row.stake} currency={currency} symbolClassName="text-[8px] opacity-70 mr-0.5" />
+                  </td>
                   <td className={`px-4 py-3 text-right font-bold ${isPos ? "text-lime" : "text-rose"}`}>
-                    {fmtMoney(row.profit, currency, true)}
+                    <Money value={row.profit} currency={currency} signed symbolClassName="text-[8px] opacity-70 mr-0.5" />
                   </td>
                   <td className={`px-4 py-3 text-right font-bold ${isPos ? "text-lime" : "text-rose"}`}>
                     {isPos ? "+" : ""}{row.roi.toFixed(1)}%
