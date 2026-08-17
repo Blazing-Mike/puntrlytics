@@ -53,7 +53,7 @@ export function BookmarkletLink({
       </a>
 
       {toast && (
-        <div className="pointer-events-none fixed bottom-6 left-1/2 z-[100] w-[min(92vw,420px)] -translate-x-1/2">
+        <div className="pointer-events-none fixed bottom-6 left-1/2 z-100 w-[min(92vw,420px)] -translate-x-1/2">
           <div
             role="status"
             className="animate-toast-in flex items-start gap-2.5 rounded-lg border border-gold/40 bg-ticket2 px-4 py-3 text-[13px] leading-snug text-ink shadow-[0_12px_40px_rgba(0,0,0,.5)]"

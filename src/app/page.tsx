@@ -8,6 +8,8 @@ import { DesktopSteps } from "@/components/home/DesktopSteps";
 import { MobileSteps } from "@/components/home/MobileSteps";
 import { InfoSection } from "@/components/home/InfoSection";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
@@ -32,9 +34,9 @@ export default function Home() {
         <div className="font-display text-xl font-black uppercase tracking-wider text-gold">
           Puntrlytics
         </div>
-        <a href="/dashboard" className="font-utility font-bold uppercase tracking-wider text-sm text-ink transition hover:text-cyan">
+        <Button render={<Link href="/dashboard" />} variant="link" className="font-utility font-bold uppercase tracking-wider text-sm text-ink transition hover:text-cyan hover:no-underline px-0">
           Dashboard
-        </a>
+        </Button>
       </header>
       <main className="px-4 pt-4 leading-relaxed max-[520px]:px-3 max-[520px]:pb-6 max-[520px]:pt-2">
         <div className="container mx-auto">

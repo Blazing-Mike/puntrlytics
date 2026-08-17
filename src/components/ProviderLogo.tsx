@@ -47,7 +47,15 @@ export function ProviderLogo({ providerName, size = 20 }: { providerName: string
     );
   }
   if (nameLower.includes("football.com") || nameLower.includes("football")) {
-    return <Image src="/footballcom.svg" alt="football.com" width={size} height={size} className="shrink-0" />;
+    return (
+      <div
+        className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#111827]"
+        style={{ width: size, height: size }}
+        title="football.com"
+      >
+        <Image src="/footballcom.svg" alt="football.com" width={size * 0.65} height={size * 0.65} className="shrink-0" />
+      </div>
+    );
   }
   if (nameLower.includes("msport")) {
     // No MSport logo asset yet — use their brand-yellow chip with the initial.

@@ -27,7 +27,7 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
       </p>
 
       <button
-        className="mb-2 w-full cursor-pointer rounded-lg border-0 bg-lime px-5 py-3.5 text-[15px] font-black text-blacktop shadow-[0_10px_24px_rgba(65,212,132,.25)] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
+        className="mb-2 w-full cursor-pointer rounded-lg border-0 bg-lime px-5 py-3.5 text-[15px] font-black text-blacktop shadow-[0_10px_24px_rgba(65,212,132,.25)]  focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-cyan"
         type="button"
         onClick={onCopy}
       >
@@ -60,7 +60,7 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
       </div>
 
       {activeDevice === "android" && (
-        <ol className="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-faint">
+        <ol className="ml-4.5 list-decimal space-y-1.5 text-[13.5px] text-faint">
           <li>Log in to <span className="font-bold text-ink">SportyBet, MSport, Stake.com,</span> or <span className="font-bold text-ink">football.com</span>.</li>
           <li>Add the bookmarklet: tap <b>⋮ → Bookmarks → New bookmark</b> (or the <b>☆</b> star on any page), paste the copied code into the URL field, name it <b>Puntrlytics</b>, and save.</li>
           <li>Run it while you're on the betting site: tap <b>⋮ → Bookmarks</b>, then tap <b>Puntrlytics</b>.</li>
@@ -71,7 +71,7 @@ export function MobileSteps({ copied, onCopy }: MobileStepsProps) {
       )}
 
       {activeDevice === "iphone" && (
-        <ol className="ml-[18px] list-decimal space-y-1.5 text-[13.5px] text-faint">
+        <ol className="ml-4.5 list-decimal space-y-1.5 text-[13.5px] text-faint">
           <li>Add the bookmarklet: bookmark <b>any page</b> (Share → Add Bookmark → Save), then open your bookmarks, tap <b>Edit</b>, replace the URL with the copied code, name it <b>Puntrlytics</b>, and tap <b>Done</b>.</li>
           <li>Log in to <span className="font-bold text-ink">SportyBet, MSport, Stake.com,</span> or <span className="font-bold text-ink">football.com</span>.</li>
           <li>Tap the <b>Share</b> icon (square with up arrow), swipe left on the bottom row → <b>More</b> → turn on <b>Bookmarks</b>.</li>
