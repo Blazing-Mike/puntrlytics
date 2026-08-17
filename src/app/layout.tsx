@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const interHeading = Inter({subsets:['latin'],variable:'--font-heading'});
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,16 +39,28 @@ export const metadata: Metadata = {
   authors: [{ name: "Puntrlytics" }],
 };
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", inter.variable, geistMono.variable, interHeading.variable)}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Analytics />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            {children}
+            <Analytics />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

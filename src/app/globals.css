@@ -1,22 +1,64 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0d12;
-  --foreground: #f2eee4;
+  /* Premium Light Mode Palette */
+  --my-color-ink: #0f172a;
+  --my-color-background: #f8fafc;
+  --my-color-ticket: #ffffff;
+  --my-color-ticket2: #f1f5f9;
+  --my-color-rule: #e2e8f0;
+  --my-color-faint: #64748b;
+  
+  --my-color-lime: #10b981;
+  --my-color-rose: #ef4444;
+  --my-color-cyan: #0ea5e9;
+  --my-color-gold: #f59e0b;
+  --my-color-blacktop: #ffffff;
+
+  --background-image-app: radial-gradient(circle at 12% 0, #e2e8f0 0 20%, transparent 42%), linear-gradient(135deg, #f8fafc, #f1f5f9 55%, #f8fafc);
+  --grid-line-color: rgba(0, 0, 0, 0.03);
+
+  /* Shadcn standard variable mappings */
+  --background: var(--my-color-background);
+  --foreground: var(--my-color-ink);
+}
+
+.dark {
+  /* Original Dark Mode Palette */
+  --my-color-ink: #f2eee4;
+  --my-color-background: #0a0d12;
+  --my-color-ticket: #202938;
+  --my-color-ticket2: #1a2230;
+  --my-color-rule: #374153;
+  --my-color-faint: #9aa4b6;
+  
+  --my-color-lime: #41d484;
+  --my-color-rose: #ff7084;
+  --my-color-cyan: #5fd4ff;
+  --my-color-gold: #f7b955;
+  --my-color-blacktop: #07090e;
+
+  --background-image-app: radial-gradient(circle at 12% 0, #1d293d 0 20%, transparent 42%), linear-gradient(135deg, #0a0d12, #171922 55%, #0a0d12);
+  --grid-line-color: rgba(255, 255, 255, 0.015);
+
+  /* Shadcn standard variable mappings */
+  --background: var(--my-color-background);
+  --foreground: var(--my-color-ink);
 }
 
 @theme {
-  --color-ink: #f2eee4;
-  --color-background: #0a0d12;
-  --color-ticket: #202938;
-  --color-ticket2: #1a2230;
-  --color-rule: #374153;
-  --color-faint: #9aa4b6;
-  --color-lime: #41d484;
-  --color-rose: #ff7084;
-  --color-cyan: #5fd4ff;
-  --color-gold: #f7b955;
-  --color-blacktop: #07090e;
+  --color-ink: var(--my-color-ink);
+  --color-background: var(--my-color-background);
+  --color-foreground: var(--foreground);
+  --color-ticket: var(--my-color-ticket);
+  --color-ticket2: var(--my-color-ticket2);
+  --color-rule: var(--my-color-rule);
+  --color-faint: var(--my-color-faint);
+  --color-lime: var(--my-color-lime);
+  --color-rose: var(--my-color-rose);
+  --color-cyan: var(--my-color-cyan);
+  --color-gold: var(--my-color-gold);
+  --color-blacktop: var(--my-color-blacktop);
 
   /* Combine the user's requested Inter + Geist Mono pair */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -25,7 +67,7 @@
   --font-utility: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   /* Background from original config */
-  --background-image-app: radial-gradient(circle at 12% 0, #1d293d 0 20%, transparent 42%), linear-gradient(135deg, #0a0d12, #171922 55%, #0a0d12);
+  --background-image-app: var(--background-image-app);
 
   /* Toast entrance */
   --animate-toast-in: toast-in 0.25s ease-out;
@@ -81,14 +123,13 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    opacity: 0.18;
     background:
       repeating-linear-gradient(90deg,
         transparent 0 22px,
-        rgba(255, 255, 255, 0.06) 22px 23px),
+        var(--grid-line-color) 22px 23px),
       repeating-linear-gradient(0deg,
         transparent 0 17px,
-        rgba(255, 255, 255, 0.04) 17px 18px);
+        var(--grid-line-color) 17px 18px);
   }
 
 

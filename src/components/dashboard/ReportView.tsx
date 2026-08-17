@@ -7,6 +7,23 @@ import type { StoredReport } from "@/lib/store";
 import dayjs from "dayjs";
 import { ProviderLogo } from "@/components/ProviderLogo";
 import { toPng } from "html-to-image";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+
+const profitChartConfig = {
+  profit: {
+    label: "Net Profit",
+  }
+};
+
+const roiChartConfig = {
+  roi: {
+    label: "ROI",
+    color: "var(--color-gold)",
+  }
+};
 import {
   BarChart,
   Bar,
@@ -68,7 +85,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+              className="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline  focus-visible:outline-cyan"
               aria-label="Toggle sidebar"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="12" y2="12" /><line x1="3" x2="21" y1="6" y2="6" /><line x1="3" x2="21" y1="18" y2="18" /></svg>
@@ -79,7 +96,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
           </div>
           <div className="flex flex-col gap-0.5 md:gap-1">
             <h1 className="text-lg md:text-2xl font-black uppercase text-gold leading-none">Performance</h1>
-            <p className="font-utility text-[10px] md:text-xs tracking-wider text-ink/80 truncate max-w-[140px] md:max-w-none">
+            <p className="font-utility text-[10px] md:text-xs tracking-wider text-ink/80 truncate max-w-35 md:max-w-none">
               {providerName} • Generated: {dayjs(savedAt).format("MMM D")}
             </p>
           </div>
@@ -97,7 +114,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
             <button
               onClick={handleShare}
               disabled={isSharing}
-              className="rounded bg-cyan/20 px-3 py-1.5 md:px-4 md:py-2 font-bold text-cyan text-[10px] md:text-xs uppercase tracking-wider hover:bg-cyan/30 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan whitespace-nowrap"
+              className="rounded bg-cyan/20 px-3 py-1.5 md:px-4 md:py-2 font-bold text-cyan text-[10px] md:text-xs uppercase tracking-wider hover:bg-cyan/30 transition-colors disabled:opacity-50 focus-visible:outline  focus-visible:outline-cyan whitespace-nowrap"
             >
               {isSharing ? "Gen..." : "Share"}
             </button>
@@ -105,7 +122,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1">
         <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-full">
           {/* Mobile Period Display */}
           <div className="md:hidden flex items-center justify-between rounded-lg border border-rule bg-background p-3 shadow-sm">
@@ -160,16 +177,17 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
           {/* Charts Section */}
           <section className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <ChartCard title="Daily Net Profit">
-              <ResponsiveContainer width="100%" height={250}>
+              <ChartContainer config={profitChartConfig} className="h-62.5 w-full">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <XAxis dataKey="displayDate" tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
-                  <YAxis tickFormatter={(val) => fmtMoney(val, currency)} tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
-                  <Tooltip
+                  <YAxis tickFormatter={(val: number | string) => fmtMoney(Number(val), currency)} tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
+                  <ChartTooltip
                     cursor={{ fill: "var(--color-rule)", opacity: 0.2 }}
-                    contentStyle={{ backgroundColor: "var(--color-ticket2)", borderColor: "var(--color-rule)", color: "var(--color-ink)", borderRadius: 8, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)" }}
-                    itemStyle={{ color: "var(--color-ink)", fontWeight: "bold" }}
-                    labelStyle={{ color: "var(--color-faint)", marginBottom: 4 }}
-                    formatter={(val: any) => fmtMoney(Number(val) || 0, currency, true)}
+                    content={
+                      <ChartTooltipContent
+                        formatter={(val: any) => fmtMoney(Number(val) || 0, currency, true)}
+                      />
+                    }
                   />
                   <Bar dataKey="profit" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry: any, index: number) => (
@@ -177,23 +195,24 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
                     ))}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             </ChartCard>
 
             <ChartCard title="Cumulative ROI Trend">
-              <ResponsiveContainer width="100%" height={250}>
+              <ChartContainer config={roiChartConfig} className="h-62.5 w-full">
                 <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <XAxis dataKey="displayDate" tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
-                  <YAxis tickFormatter={(val) => `${val}%`} tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "var(--color-ticket2)", borderColor: "var(--color-rule)", color: "var(--color-ink)", borderRadius: 8, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)" }}
-                    itemStyle={{ color: "var(--color-ink)", fontWeight: "bold" }}
-                    labelStyle={{ color: "var(--color-faint)", marginBottom: 4 }}
-                    formatter={(val: any) => `${val > 0 ? "+" : ""}${Number(val).toFixed(2)}%`}
+                  <YAxis tickFormatter={(val: number | string) => `${val}%`} tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        formatter={(val: any) => `${val > 0 ? "+" : ""}${Number(val).toFixed(2)}%`}
+                      />
+                    }
                   />
                   <Line type="monotone" dataKey="roi" stroke="var(--color-gold)" strokeWidth={3} dot={{ r: 3, fill: "var(--color-gold)" }} />
                 </LineChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             </ChartCard>
           </section>
 
@@ -204,7 +223,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
             <BreakdownTable title="Performance by Bet Type" data={report.betTypes} currency={currency} />          <BreakdownTable title="Top Sports" data={report.bySport} currency={currency} />
           </section>
         </div>
-      </div>
+      </ScrollArea>
 
       {/* Share summary card — parked off-screen in a wrapper. html-to-image only
           clones the inner node (whose own styles are clean), so it renders at
@@ -294,24 +313,32 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
 
 function StatCard({ title, value, subtitle, colorClass = "text-ink" }: { title: string; value: React.ReactNode; subtitle?: string; colorClass?: string }) {
   return (
-    <div className="group flex flex-col gap-1 justify-center rounded-md bg-background p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(247,185,85,0.08)] hover:border-gold/40">
-      <span className="mb-2 font-utility text-xs font-medium uppercase tracking-[1.5px] text-ink">
-        {title}
-      </span>
-      <span className={`font-mono text-2xl font-black ${colorClass}`}>{value}</span>
-      {subtitle && <span className="mt-2 text-xs text-faint">{subtitle}</span>}
-    </div>
+    <Card className="group transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(247,185,85,0.08)] hover:border-gold/40 border-rule p-0">
+      <CardHeader className="p-4 pb-2">
+        <CardTitle className="font-utility text-xs font-medium uppercase tracking-[1.5px] text-ink">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 pt-0">
+        <span className={`font-mono text-2xl font-black ${colorClass}`}>{value}</span>
+        {subtitle && <span className="mt-2 block text-xs text-faint">{subtitle}</span>}
+      </CardContent>
+    </Card>
   );
 }
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col rounded-xl border border-rule bg-background p-5 shadow-lg">
-      <h3 className="mb-4 font-utility text-sm font-bold uppercase tracking-[1px] text-faint">
-        {title}
-      </h3>
-      {children}
-    </div>
+    <Card className="border-rule shadow-lg p-0">
+      <CardHeader className="p-5 pb-4">
+        <CardTitle className="font-utility text-sm font-bold uppercase tracking-[1px] text-faint">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-5 pt-0">
+        {children}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -319,45 +346,47 @@ function BreakdownTable({ title, data, currency }: { title: string; data: Breakd
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="flex flex-col rounded-xl border border-rule bg-background shadow-lg overflow-hidden">
-      <div className="border-b border-rule bg-background px-5 py-4">
-        <h3 className="font-utility text-sm font-bold uppercase tracking-[1px] text-ink">
+    <Card className="overflow-hidden border-rule shadow-lg p-0">
+      <CardHeader className="border-b border-rule bg-background px-5 py-4">
+        <CardTitle className="font-utility text-sm font-bold uppercase tracking-[1px] text-ink">
           {title}
-        </h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left font-mono text-xs text-faint">
-          <thead>
-            <tr className="border-b border-rule/50">
-              <th className="px-4 py-3 font-normal uppercase tracking-wider text-ink">Category</th>
-              <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">Bets</th>
-              <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">Stake</th>
-              <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">Profit/Loss</th>
-              <th className="px-4 py-3 text-right font-normal uppercase tracking-wider text-ink">ROI</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, i) => {
-              const isPos = row.profit >= 0;
-              return (
-                <tr key={i} className="border-b border-rule/20 last:border-0 hover:bg-ticket2/30">
-                  <td className="px-4 py-3 text-ink">{row.label}</td>
-                  <td className="px-4 py-3 text-right">{row.total}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Money value={row.stake} currency={currency} symbolClassName="text-[8px] opacity-70 mr-0.5" />
-                  </td>
-                  <td className={`px-4 py-3 text-right font-bold ${isPos ? "text-lime" : "text-rose"}`}>
-                    <Money value={row.profit} currency={currency} signed symbolClassName="text-[8px] opacity-70 mr-0.5" />
-                  </td>
-                  <td className={`px-4 py-3 text-right font-bold ${isPos ? "text-lime" : "text-rose"}`}>
-                    {isPos ? "+" : ""}{row.roi.toFixed(1)}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <Table className="font-mono text-xs text-faint">
+            <TableHeader>
+              <TableRow className="border-b border-rule/50 hover:bg-transparent">
+                <TableHead className="uppercase tracking-wider text-ink px-4 py-3 h-auto">Category</TableHead>
+                <TableHead className="uppercase tracking-wider text-ink px-4 py-3 text-right h-auto">Bets</TableHead>
+                <TableHead className="uppercase tracking-wider text-ink px-4 py-3 text-right h-auto">Stake</TableHead>
+                <TableHead className="uppercase tracking-wider text-ink px-4 py-3 text-right h-auto">Profit/Loss</TableHead>
+                <TableHead className="uppercase tracking-wider text-ink px-4 py-3 text-right h-auto">ROI</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((row, i) => {
+                const isPos = row.profit >= 0;
+                return (
+                  <TableRow key={i} className="border-b border-rule/20 last:border-0 hover:bg-ticket2/30 transition-colors">
+                    <TableCell className="text-ink px-4 py-3">{row.label}</TableCell>
+                    <TableCell className="text-right px-4 py-3">{row.total}</TableCell>
+                    <TableCell className="text-right px-4 py-3">
+                      <Money value={row.stake} currency={currency} symbolClassName="text-[8px] opacity-70 mr-0.5" />
+                    </TableCell>
+                    <TableCell className={`text-right font-bold px-4 py-3 ${isPos ? "text-lime" : "text-rose"}`}>
+                      <Money value={row.profit} currency={currency} signed symbolClassName="text-[8px] opacity-70 mr-0.5" />
+                    </TableCell>
+                    <TableCell className={`text-right font-bold px-4 py-3 ${isPos ? "text-lime" : "text-rose"}`}>
+                      {isPos ? "+" : ""}{row.roi.toFixed(1)}%
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

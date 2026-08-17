@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { HistorySidebar } from "@/components/dashboard/HistorySidebar";
@@ -42,9 +43,9 @@ export default function DashboardPage() {
           <p className="text-ink leading-relaxed mb-6">
             Open <b>SportyBet</b>, <b>MSport</b>, <b>Stake</b> or <b>football.com</b>, run the Puntrlytics bookmarklet, and your report will appear here.
           </p>
-          <Link href="/" className="inline-block rounded-full bg-ticket2 px-6 py-2.5 font-utility text-sm font-bold uppercase tracking-wider text-ink transition hover:bg-rule hover:text-cyan">
+          <Button render={<Link href="/" />} variant="secondary" className="rounded-full bg-ticket2 px-6 py-6 font-utility text-sm font-bold uppercase tracking-wider text-ink transition hover:bg-rule hover:text-cyan border-0">
             Back to home
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -68,13 +69,15 @@ export default function DashboardPage() {
           <ReportView reportData={activeReport} onToggleSidebar={() => setIsSidebarOpen(true)} />
         ) : (
           <div className="flex h-full items-center justify-center text-faint relative">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsSidebarOpen(true)}
-              className="absolute top-4 left-4 md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+              className="absolute top-4 left-4 md:hidden text-faint hover:bg-ticket2 hover:text-ink focus-visible:outline-cyan"
               aria-label="Open sidebar"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="12" y2="12" /><line x1="3" x2="21" y1="6" y2="6" /><line x1="3" x2="21" y1="18" y2="18" /></svg>
-            </button>
+            </Button>
             Select a report from the history to view it.
           </div>
         )}
