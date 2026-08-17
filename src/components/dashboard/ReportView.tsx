@@ -107,6 +107,16 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-full">
+          {/* Mobile Period Display */}
+          <div className="md:hidden flex items-center justify-between rounded-lg border border-rule bg-background p-3 shadow-sm">
+            <span className="font-utility text-[10px] tracking-wider text-faint uppercase">
+              Period
+            </span>
+            <span className="font-mono text-[11px] text-ink">
+              {report.period.first ? dayjs(report.period.first).format("MMM D, YYYY") : "?"} — {report.period.last ? dayjs(report.period.last).format("MMM D, YYYY") : "?"}
+            </span>
+          </div>
+
           {/* Top KPIs */}
           <section className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
             <div className="col-span-2 md:col-span-1">
