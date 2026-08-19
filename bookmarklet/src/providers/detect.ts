@@ -1,8 +1,6 @@
 // Picks the right provider for the site the bookmarklet is currently running
-// Picks the right provider for the site the bookmarklet is currently running
 // on. This lets us ship ONE bookmarklet that works on every supported
 // bookmaker instead of one bookmarklet per site.
-//
 // Matching is by hostname suffix (case-insensitive) so regional subdomains
 // (e.g. "sports.sportybet.com") also resolve to the right provider.
 

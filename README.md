@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Puntrlytics
+
+Puntrlytics is a privacy-first, client-side betting history analyzer. It allows users to extract their betting history from supported sportsbooks using a bookmarklet and visualize their performance on a dashboard. 
+
+**Zero Data Collection**: All data extraction and analysis happen locally in the browser. Your betting data never leaves your device, and there are no accounts or backend servers involved.
+
+## Features
+
+- **100% Client-Side**: No backend, no accounts, no data upload.
+- **Bookmarklet Extraction**: Easily pull betting history directly from the DOM of supported platforms.
+- **Rich Analytics**: Visualizes betting performance, win rates, and trends using Recharts.
+- **Supported Platforms**: 
+  - [Stake](https://stake.com)
+  - [SportyBet](https://www.sportybet.com)
+  - [MSport](https://www.msport.com)
+  - [football.com](https://football.com)
+
+## Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router, Client Components)
+- **Styling**: Tailwind CSS, shadcn/ui
+- **State Management**: Zustand (with localStorage persistence)
+- **Charts**: Recharts
+- **Bookmarklet**: Custom ESBuild pipeline to bundle the extraction scripts
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+npm install
+```
+
+### Development Server
+
+Run the Next.js development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building the Bookmarklet
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The bookmarklet scripts are located in the `bookmarklet/` directory. When you make changes to the data extraction logic, you need to build the bookmarklet:
 
-## Learn More
+```bash
+npm run build:bookmarklet
+```
 
-To learn more about Next.js, take a look at the following resources:
+This script (defined in `bookmarklet/build.mjs`) bundles the TypeScript files into minified JavaScript that can be injected via a URL. This step is automatically included when you run `npm run build` for the main Next.js app.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How It Works
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. The user drags the Puntrlytics bookmarklet to their bookmarks bar.
+2. The user navigates to a supported sportsbook and clicks the bookmarklet.
+3. The bookmarklet script executes in the context of the sportsbook's page, reading the betting history from the DOM or intercepted network requests.
+4. The extracted data is encoded and passed via the URL hash to the Puntrlytics dashboard.
+5. The Next.js dashboard decodes the payload, saves it to `localStorage` using Zustand, and generates the analytical reports.
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Contributions are welcome! If you want to add support for a new sportsbook, you'll need to create a new provider script in `bookmarklet/src/providers/` and update the registry.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
