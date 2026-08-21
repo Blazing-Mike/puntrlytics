@@ -55,17 +55,28 @@ export default function Home() {
           <MobileSteps copied={copied} onCopy={handleCopy} />
         </div>
       </main>
-      <footer className="">
-        <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-6 py-4 text-center sm:flex-row sm:text-left max-[520px]:px-4">
-          <span className="font-display text-sm font-black uppercase tracking-wider text-gold">
-            Puntrlytics
-          </span>
-          <p className="font-utility text-[11px] uppercase tracking-[1.2px] text-ink">
-            Your data never leaves your device — no account, no upload
-          </p>
-          <span className="font-mono text-[11px] text-faint">
-            © {new Date().getFullYear()} Puntrlytics
-          </span>
+      <footer className="border-t border-rule mt-12">
+        <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-6 py-8 text-center md:flex-row md:text-left max-[520px]:px-4">
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <span className="font-display text-sm font-black uppercase tracking-wider text-gold">
+              Puntrlytics
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center gap-3 md:items-end">
+            <div className="flex items-center gap-4 text-[11px] font-utility font-bold uppercase tracking-wider">
+              <a href="https://x.com/mikeoxygen_" target="_blank" rel="noopener noreferrer" className="text-faint hover:text-cyan transition-colors focus-visible:outline focus-visible:outline-cyan rounded-sm">
+                Built by @mikeoxygen_
+              </a>
+              <span className="text-rule">•</span>
+              <a href="https://github.com/Blazing-Mike/puntrlytics" target="_blank" rel="noopener noreferrer" className="text-faint hover:text-cyan transition-colors focus-visible:outline focus-visible:outline-cyan rounded-sm">
+                GitHub
+              </a>
+            </div>
+            <span className="font-mono text-[10px] text-faint">
+              © {new Date().getFullYear()} Puntrlytics
+            </span>
+          </div>
         </div>
       </footer>
     </>
