@@ -88,6 +88,8 @@ export interface Report {
   byTournament: BreakdownBucket[];
   /** Performance by stake-size range. */
   stakeBuckets: BreakdownBucket[];
+  /** Performance on weekends. */
+  weekendStats: BreakdownBucket;
   /** Date range covered (date-only keys, "" when unknown). */
   period: { first: string; last: string };
 }
@@ -383,6 +385,8 @@ export function computeReport(bets: Bet[]): Report {
     newBucket(e.label),
   );
 
+  const weekendStats = newBucket("Weekend");
+
   let firstDate = "";
   let lastDate = "";
 
@@ -505,6 +509,22 @@ export function computeReport(bets: Bet[]): Report {
         sb.profit += profit;
       }
     }
+    
+    // Weekend Stats bucket (Saturday or Sunday)
+    if (dateKey !== "Unknown Date") {
+      const betDate = new Date(dateKey);
+      const day = betDate.getDay();
+      if (day === 0 || day === 6) {
+        weekendStats.total++;
+        weekendStats.stake += stake;
+        if (status === "Won") weekendStats.won++;
+        if (status === "Won" || status === "Lost") {
+          weekendStats.settled++;
+          weekendStats.settledStake += stake;
+          weekendStats.profit += profit;
+        }
+      }
+    }
 
     // Report period (date-only key)
     if (dateKey !== "Unknown Date") {
@@ -583,6 +603,8 @@ export function computeReport(bets: Bet[]): Report {
   const stakeBucketList = stakeBuckets.filter((b) => b.total > 0);
   stakeBucketList.forEach(finalize);
 
+  finalize(weekendStats);
+
   return {
     counts,
     totalBets: bets.length,
@@ -600,6 +622,7 @@ export function computeReport(bets: Bet[]): Report {
     bySport,
     byTournament,
     stakeBuckets: stakeBucketList,
+    weekendStats,
     period: { first: firstDate, last: lastDate },
   };
 }
