@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, useCallback } from "react";
-import { fmtMoney, type BreakdownBucket, type DaySummary } from "@/lib/core";
+import { fmtMoney, type BreakdownBucket, type DaySummary, computeReport } from "@/lib/core";
 import { Money } from "@/components/Money";
 import type { StoredReport } from "@/lib/store";
 import dayjs from "dayjs";
@@ -37,7 +37,21 @@ import {
 } from "recharts";
 
 export function ReportView({ reportData, showShare = true, onToggleSidebar }: { reportData: StoredReport; showShare?: boolean; onToggleSidebar?: () => void }) {
-  const { report, providerName, currency, savedAt } = reportData;
+  const { providerName, currency, savedAt, bets } = reportData;
+
+  const [filterSport, setFilterSport] = useState<string>("All");
+
+  const sportsList = useMemo(() => {
+    if (!bets) return [];
+    const sports = new Set(bets.map((b) => b.sport).filter(Boolean));
+    return ["All", ...Array.from(sports)];
+  }, [bets]);
+
+  const report = useMemo(() => {
+    if (!bets) return reportData.report;
+    if (filterSport === "All") return computeReport(bets);
+    return computeReport(bets.filter((b) => b.sport === filterSport));
+  }, [reportData.report, bets, filterSport]);
 
   const isPos = report.netProfit >= 0;
   const isRoiPos = report.roi >= 0;
@@ -142,6 +156,26 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
 
       <ScrollArea className="flex-1">
         <div className="p-4 md:p-8 space-y-6 md:space-y-8 min-h-full">
+          {/* Filters */}
+          {sportsList.length > 1 && (
+            <div className="flex items-center gap-3 bg-background p-3 rounded-lg border border-rule shadow-sm">
+              <span className="font-utility text-[10px] tracking-wider text-faint uppercase">
+                Sport
+              </span>
+              <select
+                className="bg-transparent text-sm font-mono text-ink focus:outline-none cursor-pointer"
+                value={filterSport}
+                onChange={(e) => setFilterSport(e.target.value)}
+              >
+                {sportsList.map((sport) => (
+                  <option key={sport} value={sport} className="bg-ticket2">
+                    {sport}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Mobile Period Display */}
           <div className="md:hidden flex items-center justify-between rounded-lg border border-rule bg-background p-3 shadow-sm">
             <span className="font-utility text-[10px] tracking-wider text-faint uppercase">
@@ -153,16 +187,26 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
           </div>
 
           {/* Top KPIs */}
-          <section className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-            <div className="col-span-2 md:col-span-1">
+          <section className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+            <div className="col-span-2 md:col-span-1 lg:col-span-2">
               <StatCard title="Net Profit" value={<Money value={report.netProfit} currency={currency} signed />} colorClass={isPos ? "text-lime" : "text-rose"} />
             </div>
-            <div className="col-span-2 md:col-span-1">
+            <div className="col-span-2 md:col-span-1 lg:col-span-1">
               <StatCard title="ROI" value={`${isRoiPos ? "+" : ""}${report.roi.toFixed(1)}%`} colorClass={isRoiPos ? "text-lime" : "text-rose"} />
             </div>
             <StatCard title="Win Rate" value={`${report.winRate.toFixed(1)}%`} />
             <StatCard title="Total Bets" value={report.totalBets.toLocaleString()} />
-            <StatCard title="Settled Bets" value={report.settledTotal.toLocaleString()} />
+
+            {report.weekendStats && (
+              <div className="col-span-2 md:col-span-4 lg:col-span-1">
+                <StatCard
+                  title="Weekend P/L"
+                  value={<Money value={report.weekendStats.profit} currency={currency} signed />}
+                  colorClass={report.weekendStats.profit >= 0 ? "text-lime" : "text-rose"}
+                  subtitle={`${report.weekendStats.total} bets • ${report.weekendStats.winPct.toFixed(1)}% Win`}
+                />
+              </div>
+            )}
           </section>
 
           <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -193,7 +237,7 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
           )}
 
           {/* Charts Section */}
-          <section className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <section className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start">
             <ChartCard title="Daily Net Profit">
               <ChartContainer config={profitChartConfig} className="h-62.5 w-full">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -230,6 +274,47 @@ export function ReportView({ reportData, showShare = true, onToggleSidebar }: { 
                   />
                   <Line type="monotone" dataKey="roi" stroke="var(--color-gold)" strokeWidth={3} dot={{ r: 3, fill: "var(--color-gold)" }} />
                 </LineChart>
+              </ChartContainer>
+            </ChartCard>
+
+            {/* New Charts for Odds and Leagues */}
+            <ChartCard title="Odds Performance (Win Rate)">
+              <ChartContainer config={{}} className="h-62.5 w-full">
+                <BarChart data={report.odds} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
+                  <YAxis tickFormatter={(val: number | string) => `${val}%`} tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
+                  <ChartTooltip
+                    cursor={{ fill: "var(--color-rule)", opacity: 0.2 }}
+                    content={<ChartTooltipContent formatter={(val: any) => `${Number(val).toFixed(1)}%`} />}
+                  />
+                  <Bar dataKey="winPct" radius={[4, 4, 0, 0]}>
+                    {report.odds.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill="var(--color-cyan)" />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </ChartCard>
+
+            <ChartCard title="Top Tournaments (Profit)">
+              <ChartContainer 
+                config={{}} 
+                className="w-full" 
+                style={{ height: `${Math.max(250, report.byTournament.length * 40 + 40)}px` }}
+              >
+                <BarChart data={report.byTournament} layout="vertical" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis type="number" tickFormatter={(val: number | string) => fmtMoney(Number(val), currency)} tick={{ fontSize: 11, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} />
+                  <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: "var(--color-faint)" }} tickLine={false} axisLine={false} width={120} />
+                  <ChartTooltip
+                    cursor={{ fill: "var(--color-rule)", opacity: 0.2 }}
+                    content={<ChartTooltipContent formatter={(val: any) => fmtMoney(Number(val) || 0, currency, true)} />}
+                  />
+                  <Bar dataKey="profit" radius={[0, 4, 4, 0]}>
+                    {report.byTournament.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.profit >= 0 ? "var(--color-lime)" : "var(--color-rose)"} />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ChartContainer>
             </ChartCard>
           </section>
