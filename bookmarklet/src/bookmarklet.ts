@@ -1,8 +1,5 @@
-// Bookmarklet runner — shared by every provider entry.
-// Fetches the user's bets, computes the report, and opens the
-// dashboard in a new blank tab (fully self-contained HTML).
-
 import { BA_VERSION, computeReport, type Provider } from "../../src/lib/core";
+import * as LZString from "lz-string";
 
 // Public host (injected at build time). When set, the bookmarklet opens the
 // hosted /dashboard page with the report in the URL fragment, so the data is
@@ -98,11 +95,15 @@ export function runBookmarklet(provider: Provider): void {
         currency: provider.currency,
         savedAt: new Date().toISOString(),
         report,
+        bets,
       };
+      
+      const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(payload));
+      
       const target =
         __BET_ANALYZER_HOST__ +
         "/dashboard#" +
-        encodeURIComponent(JSON.stringify(payload));
+        compressed;
       const w = window.open(target, "_blank");
       if (!w) {
         throw new Error(
